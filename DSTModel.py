@@ -23,8 +23,12 @@ class SentenceBiLSTM(nn.Module):
         pass
 
 class HierarchicalLSTM(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size=128, hidden_size=256):
         super(HierarchicalLSTM, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+
+        self.hierarchical_lstm = nn.LSTM(self.input_size, self.hidden_size) 
 
     def forward(self, x):
         pass
