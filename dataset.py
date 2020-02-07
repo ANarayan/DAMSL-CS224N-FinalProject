@@ -1,10 +1,39 @@
 import nltk
 import json
+import os
 from pathlib import Path
 from nltk import word_tokenize
 from nltk.util import ngrams
 import numpy as np
 
+
+DATA = Path.cwd().parent / 'data'
+
+DOMAINS = ['attraction','hospital', 'hotel', 'police', 'restaurant', 'taxi', 'train'] 
+
+
+def read_dials(base, domains, word_to_id, usr=True):
+    """
+    Reads all dials into vocab dict and saves to json
+    
+    --base: Path object
+    --domains: (list) dialogue domains
+    --word_to_id: (dict) existing word to index mappings
+    --usr: whether to get usr or system transcript
+    """
+    trans_key = 'transcript' if usr else 'system_transcript'
+    out_ext = 'usr_vocab.json' if usr else 'system_vocab.json'
+    i = len(word_to_id)
+    for d in domains:
+        for dial in json.load(open(base / '{}.json'.format(d), 'r')):
+            for bs in dial['dialogue']:
+                for w in bs.get(trans_key):
+                    if not word_to_id.get(w):
+                        word_to_id[w] = i
+                        i += 1
+
+    json.dump(word_to_id, open(DATA / out_ext, 'w'))
+            
 
 class MultiwozSet():
     """Interface to the cleaned MultiWOZ dataset"""
@@ -32,6 +61,7 @@ class Vocab(MultiwozSet):
         self.unk_id = self.word_to_id['<unk>']
 
         #Fill with all token from all utterances
+    
 
     def get(self):
         return self.word_to_id

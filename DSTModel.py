@@ -92,7 +92,7 @@ class SentenceBiLSTM(nn.Module):
 
 class HierarchicalLSTM(nn.Module):
     def __init__(self, input_size=128, hidden_size=256):
-        super(HierarchicalLSTM, self).__init__()
+        super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
 
@@ -100,6 +100,13 @@ class HierarchicalLSTM(nn.Module):
 
     def forward(self, x):
         pass
+
+class PreviousStateEncoding(nn.Module):
+    def __init__(self, emb_dim, max_n_states):
+        super().__init__()
+        self.emb_size = emb_size
+        self.s_dim = max_n_states
+        self.emb = nn.Embedding(self.s_dim, self.emb_size)
 
 class DialogueActsLSTM(nn.Module):
     def __init__(self):
