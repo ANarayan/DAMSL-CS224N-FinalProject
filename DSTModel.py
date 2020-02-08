@@ -14,7 +14,7 @@ class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
     def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
-                    ff_fc1_dim, batch_size, slots):
+                    ff_hidden_dim, batch_size, num_slots):
         super(DST, self).__init__()
 
         # instantiate candidate_embedding
@@ -24,10 +24,10 @@ class DST(nn.Module):
 
         # TODO: instantiate DialogueActsLSTM
 
-        # Each slot has its own feedforward classification net
-        self.slot_2_classnet = {}
-        for slot_name in slots:
-            self.slot_2_classnet[slot_name] = ClassificationNet(embed_dim, ff_fc1_dim)
+        # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
+        #                                               A_i = system action utterances, C_ij = candidate encoding
+        self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
+        self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots)
 
     def forward(self, dialogue, slot_values):
         """ Forward pass for an entire dialogue
@@ -87,8 +87,12 @@ class SentenceBiLSTM(nn.Module):
 
     def forward(self, sentence):
         embeds = self.candidate_encoder(sentence).view(len(sentence), self.batch_size, -1)
-        encoding, self.hidden = self.sentence_biLSTM(embeds, self.hidden)
-        return self.hidden
+        encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds, self.hidden)
+
+        #`last_hidden` is a tensor shape (2, b, h). The first dimension corresponds to forwards and backwards passes.
+        # Need to Concatenate the forwards and backwards tensors to obtain the final encoded utterance representation.
+        final_utt_rep = torch.cat((last_hidden[0], last_hidden[1]), 1)
+        return final_utt_rep
 
 class HierarchicalLSTM(nn.Module):
     def __init__(self, input_size=128, hidden_size=256):
@@ -112,7 +116,7 @@ class ClassificationNet(nn.Module):
     """
         Feed-forward network used to determine whether a candidate fills a given slot
     """
-    def __init__(self, context_dim, hidden1_dim):
+    def __init__(self, context_dim, hidden_dim, num_slots):
         """ Init SentenceBiLSTM
 
         @param context_dim (int): Embedding size (dimensionality)
@@ -120,15 +124,20 @@ class ClassificationNet(nn.Module):
         """
         super(ClassificationNet, self).__init__()
         self.context_feature_dim = context_dim
-        self.fc1_dim = hidden1_dim
+        self.fc_dim = hidden_dim
+        self.num_slots = num_slots
 
-        self.fc1 = nn.Linear(self.context_feature_dim, self.fc1_dim)
-        self.fc2 = nn.Linear(self.fc1_dim, 1)
+        # FC linear layer: input: context feature vector concatentated with candidate
+        #                  outut: vector of dimensions fc_dim
+        self.fc1 = nn.Linear(self.context_feature_dim, self.fc_dim)
+
+        # Projection matrix: Projection weight matrix of size (fc_dim x num_slots)
+        self.slot_projection = nn.Linear(self.fc_dim, self.num_slots, bias=False)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        output = self.fc2(x)
-        return F.sigmoid(output)
+        output =  self.slot_projection(x)
+        return F.logsigmoid(output)
 
 
 
