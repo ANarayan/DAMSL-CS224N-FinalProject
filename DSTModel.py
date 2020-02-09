@@ -14,7 +14,7 @@ class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
     def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
-                    ff_fc1_dim, batch_size, slots):
+                    ff_hidden_dim, batch_size, num_slots):
         super(DST, self).__init__()
 
         # instantiate candidate_embedding
@@ -24,37 +24,46 @@ class DST(nn.Module):
 
         # TODO: instantiate DialogueActsLSTM
 
-        # Each slot has its own feedforward classification net
-        self.slot_2_classnet = {}
-        for slot_name in slots:
-            self.slot_2_classnet[slot_name] = ClassificationNet(embed_dim, ff_fc1_dim)
+        # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
+        #                                               A_i = system actions, C_ij = candidate encoding=
+        self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
+        self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots)
 
-    def forward(self, dialogue, slot_values):
-        """ Forward pass for an entire dialogue
-            @param dialogue (Dict): contains turn by turn conversation information such as user utterances,
-                            system dialogue acts, and ground truth slot values
-            @param slot_values (Tensor): specifies relevant slot values for a particular domain
-            @returns filled_slots (Dict): mapping of slots to values
+    def get_turncontext(self, turn):
+        """ Compute turn context -- dependent on user utterance, system dialogue acts, 
+            and dialogue history
+            @param turn (Dict): turn['user_utterance'] : user utterance for the turn (List[String]), 
+                            turn['system_actions_formatted'] : agent dialogue acts (List[String]), 
+                            turn['utterance_history'] : encoded user utterance history (List[Tensors])
+            @return context (Tensor): concated feature vector 
+            @return utterance_enc (Tensor): encoded utterance 
         """
-        pass 
+        user_utterance = turn['user_utterance']
+        system_dialogue_acts = turn['system_actions_formatted']
+        sentence_hierarchy = turn['utterance_history']
+        
+        utterance_enc = self.sentence_encoder(user_utterance)
+        dialogue_acts_enc = self.system_dialogue_acts(system_dialogue_acts)
+        dialogue_context_enc = self.hierarchial_encoder(sentence_hierarchy)
 
-    def forward_turn(self, user_utterance, past_user_utterances, dialogue_acts, current_state):
-        """ Forward pass for a user turn in a given dialogue
-            @param user_utterance (String): Current user utterance
-            @param past_user_utterances (Tensor): Tensor of past encoded user utterances
-            @param dialogue_acts (Tensor): List of dialogue acts (represented as strings) in the format
-                                        dialogue_act(slot_type)
-            @param current_state: current Dialogue state
-            @returns current_state, past_user_utterances, loss: returns updated current_state, updates past_user_utterances
-                                to include the newly encoded user utterance and returns the loss over all candidates for the turn    
+        # concatenate three features together to create context featue vector
+        context = torch.cat([utterance_enc, dialogue_context_enc, dialogue_acts_enc],1)
+        return context, utterance_enc
+
+
+    def forward(self, turn_context, candidate):
+        """ Forward pass for a turn/candidate pair
+            @param turn_context (Tensor): vector which is a concatenation of encoded utterance
+                                    dialogue history, and system actions
+            @param candidate (String): slot candidate
+            @returns predicted (Tensor): output vector representing the per slot prediction for
+                        each candidate (num_slots x 1)
         """
-        pass
-
-    def train_one_batch(self, dialogues):
-        """ Trains model over a single batch
-        """
-        pass
-
+        embed_cand = self.candidate_embeddings(candidate)
+        feed_forward_input = torch.cat((turn_context, embed_cand))
+        output = self.classification_net(feed_forward_input)
+        return output
+         
 class SentenceBiLSTM(nn.Module): 
     """ BiLSTM used to encode individual user utterances 
     """
@@ -87,8 +96,12 @@ class SentenceBiLSTM(nn.Module):
 
     def forward(self, sentence):
         embeds = self.candidate_encoder(sentence).view(len(sentence), self.batch_size, -1)
-        encoding, self.hidden = self.sentence_biLSTM(embeds, self.hidden)
-        return self.hidden
+        encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds, self.hidden)
+
+        #`last_hidden` is a tensor shape (2, b, h). The first dimension corresponds to forwards and backwards passes.
+        # Need to Concatenate the forwards and backwards tensors to obtain the final encoded utterance representation.
+        final_utt_rep = torch.cat((last_hidden[0], last_hidden[1]), 1)
+        return final_utt_rep
 
 class HierarchicalLSTM(nn.Module):
     def __init__(self, input_size=128, hidden_size=256):
@@ -119,7 +132,7 @@ class ClassificationNet(nn.Module):
     """
         Feed-forward network used to determine whether a candidate fills a given slot
     """
-    def __init__(self, context_dim, hidden1_dim):
+    def __init__(self, context_dim, hidden_dim, num_slots):
         """ Init SentenceBiLSTM
 
         @param context_dim (int): Embedding size (dimensionality)
@@ -127,15 +140,20 @@ class ClassificationNet(nn.Module):
         """
         super(ClassificationNet, self).__init__()
         self.context_feature_dim = context_dim
-        self.fc1_dim = hidden1_dim
+        self.fc_dim = hidden_dim
+        self.num_slots = num_slots
 
-        self.fc1 = nn.Linear(self.context_feature_dim, self.fc1_dim)
-        self.fc2 = nn.Linear(self.fc1_dim, 1)
+        # FC linear layer: input: context feature vector concatentated with candidate
+        #                  outut: vector of dimensions fc_dim
+        self.fc1 = nn.Linear(self.context_feature_dim, self.fc_dim)
+
+        # Projection matrix: Projection weight matrix of size (fc_dim x num_slots)
+        self.slot_projection = nn.Linear(self.fc_dim, self.num_slots, bias=False)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        output = self.fc2(x)
-        return F.sigmoid(output)
+        output =  self.slot_projection(x)
+        return F.logsigmoid(output)
 
 
 
