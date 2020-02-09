@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import random
 import numpy as np
 
-from embeddings import VocabEmbeddings
+from model.embeddings import VocabEmbeddings
 
 
 class DST(nn.Module):
@@ -40,15 +40,26 @@ class DST(nn.Module):
         """
         user_utterance = turn['user_utterance']
         system_dialogue_acts = turn['system_actions_formatted']
-        sentence_hierarchy = turn['utterance_history']
+        past_utterances = turn['utterance_history']
         
-        utterance_enc = self.sentence_encoder(user_utterance)
+        # TODO: Parallelize this computation
+        encoded_past_utterances = []
+        for utterance in past_utterances:
+            encoded_sent = self.sentence_encoder(utterance)
+            encoded_past_utterances.append(encoded_sent)
+        
+        # get encoded user utterance for the current turn
+        utterance_enc = encoded_past_utterances[-1]
+
+        #system_dialogue_acts = List(Strings)
         dialogue_acts_enc = self.system_dialogue_acts(system_dialogue_acts)
-        dialogue_context_enc = self.hierarchial_encoder(sentence_hierarchy)
+
+        #encoded_past_utterances: List[Tensors(Dim: (sentence_hidden_dim * 2 x 1))]
+        dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances)
 
         # concatenate three features together to create context featue vector
         context = torch.cat([utterance_enc, dialogue_context_enc, dialogue_acts_enc],1)
-        return context, utterance_enc
+        return context
 
 
     def forward(self, turn_context, candidate):
