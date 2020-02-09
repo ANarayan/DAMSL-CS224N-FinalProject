@@ -18,8 +18,8 @@ import torch.nn as nn
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument('--data_dir', help='Directory which contain the dialogue dataset')
-parser.add_argument('--model_dir', help="Directory containing model config file")
+parser.add_argument('--data_dir', default='data/', help='Directory which contain the dialogue dataset')
+parser.add_argument('--model_dir', default='experiments/', help="Directory containing model config file")
 
 def train(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params):
     model.train()
