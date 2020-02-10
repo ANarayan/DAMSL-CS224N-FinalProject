@@ -104,15 +104,35 @@ class SentenceBiLSTM(nn.Module):
         return final_utt_rep
 
 class HierarchicalLSTM(nn.Module):
-    def __init__(self, input_size=128, hidden_size=256):
-        super(HierarchicalLSTM, self).__init__()
+    """
+    Encodes sentence 
+    """
+    def __init__(self, input_size, hidden_size):
+        super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
 
         self.hierarchical_lstm = nn.LSTM(self.input_size, self.hidden_size) 
 
-    def forward(self, x):
-        pass
+    def forward(self, encoded_past_utterances):
+        """
+        --encoded_past_utterances: List[Tensor(embedding_dim * 2, b)]
+
+        Returns:
+            last_hidden: Tensor(hidden_size, b)
+        """
+
+        stacked_utterances = torch.stack(encoded_past_utterances)
+        hidden_sts, (last_hidden, last_cell) = self.hierarchical_lstm(stacked_utterances)
+
+        return last_hidden 
+
+class PreviousStateEncoding(nn.Module):
+    def __init__(self, emb_dim, max_n_states):
+        super().__init__()
+        self.emb_size = emb_size
+        self.s_dim = max_n_states
+        self.emb = nn.Embedding(self.s_dim, self.emb_size)
 
 class DialogueActsLSTM(nn.Module):
     def __init__(self):
