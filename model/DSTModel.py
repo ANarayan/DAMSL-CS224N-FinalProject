@@ -54,7 +54,7 @@ class DST(nn.Module):
         #system_dialogue_acts = List(Strings)
         dialogue_acts_enc = self.system_dialogue_acts(system_dialogue_acts)
 
-        #encoded_past_utterances: List[Tensors(Dim: (sentence_hidden_dim * 2 x 1))]
+        #encoded_past_utterances: List[Tensors(Dim: ((sentence_hidden_dim * 2) x 1))]
         dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances)
 
         # concatenate three features together to create context featue vector

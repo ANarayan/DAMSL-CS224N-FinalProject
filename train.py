@@ -145,7 +145,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         model = DST(**model_params).cuda()
     else:
-        model = DST(**model_params).cuda()
+        model = DST(**model_params)
 
     optimizer = optim.Adam(model.parameters(), lr=training_params['learning_rate'])
 
