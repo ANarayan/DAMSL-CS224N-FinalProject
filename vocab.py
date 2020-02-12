@@ -84,13 +84,14 @@ class Vocab():
         return i
 
     
-    def update_from_pkl(self, pth, ftype) 
+    def update_from_pkl(self, pth, ftype): 
         """
         Reads all dials from pkl file and updates Vocab object
         
         --pth: Path object
         --ftype: one of {'json', 'pkl'}
         --usr: whether to get usr or system transcript
+        
         """
         i = len(self.word_to_id)
         if ftype == 'pkl':
@@ -137,7 +138,8 @@ class DAVocab(Vocab):
         self.word_to_id = word_to_id
 
     def fill_special_toks(self):
-        self.word_to_id[NONE] = 0
+        # Need to overload parent fill_special_toks
+        return
 
     def update_from_pkl(self, pth, ftype):
         i = len(self.word_to_id)
@@ -147,9 +149,9 @@ class DAVocab(Vocab):
             dials = json.load(open(pth, 'r'))
         for dial in dials:
             for turn in dial['dialogue'].keys():
-                acts = dial['dialogue'][turn].get('system_acts', ''))
+                acts = dial['dialogue'][turn].get('system_dialogue_acts', '')
                 for act in acts:
-                    self.update(act, i)
+                    i = self.update(act, i)
         return i
 
     def save_to_json(self, pth):
@@ -184,7 +186,7 @@ if __name__ == '__main__':
         vocab = Vocab(args.ngrams)
         vocab.new_from_domains(args.domains, args.datadir)
         vocab.save_to_json(args.savepth)
-    elif args.vocab == 'dialogue-acts':
+    elif args.vocab == 'dialogue_acts':
         vocab = DAVocab()
         vocab.new_from_domains(args.domains, args.datadir)
         vocab.save_to_json(args.savepth)

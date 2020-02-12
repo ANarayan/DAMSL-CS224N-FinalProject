@@ -48,7 +48,3 @@ class DialoguesDataset(Dataset):
         # returns turn information and gt labels associated with each candidate for in the turn
         return turn_dict, label
 
-
-        
-
-
