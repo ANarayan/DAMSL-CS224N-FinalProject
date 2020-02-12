@@ -14,11 +14,11 @@ class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
     def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
-                    ff_hidden_dim, batch_size, num_slots):
+                    ff_hidden_dim, batch_size, num_slots, vocab):
         super(DST, self).__init__()
 
         # instantiate candidate_embedding
-        self.candidate_embeddings = VocabEmbeddings(embed_dim)
+        self.candidate_embeddings = VocabEmbeddings(embed_dim, vocab)
         self.sentence_encoder = SentenceBiLSTM(sentence_hidden_dim, embed_dim, self.candidate_embeddings, batch_size)
         self.hierarchial_encoder = HierarchicalLSTM(sentence_hidden_dim, hierarchial_hidden_dim)
 
@@ -39,7 +39,7 @@ class DST(nn.Module):
             @return utterance_enc (Tensor): encoded utterance 
         """
         user_utterance = turn['user_utterance']
-        system_dialogue_acts = turn['system_actions_formatted']
+        system_dialogue_acts = turn['system_dialogue_acts']
         past_utterances = turn['utterance_history']
         
         # TODO: Parallelize this computation
@@ -102,8 +102,14 @@ class SentenceBiLSTM(nn.Module):
 
 
     def init_hidden(self):
-        return (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
+
+        if torch.cuda.is_available():
+            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
                 Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()))
+        else: 
+            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim)),
+                Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
+        return hidden
 
     def forward(self, sentence):
         embeds = self.candidate_encoder(sentence).view(len(sentence), self.batch_size, -1)
