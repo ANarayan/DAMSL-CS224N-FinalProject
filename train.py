@@ -118,6 +118,9 @@ if __name__ == '__main__':
             'ff_hidden_dim' : 256, 
             'batch_size' : 32,
             'num_slots' : 35,
+            'ngrams' : 1,
+            'candidate_utterance_vocab_pth' : 'vocab.json',
+            'da_vocab_pth': 'da_vocab.json'
         }
 
         training_params = {
