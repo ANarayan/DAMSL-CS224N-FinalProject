@@ -10,12 +10,11 @@ import numpy as np
 from model.embeddings import Embeddings
 from vocab import Vocab, DAVocab
 
-
 class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
     def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
-                    ff_hidden_dim, batch_size, num_slots, ngrams, candidate_utterance_vocab_pth, da_vocab_pth):
+                ff_hidden_dim, batch_size, num_slots, ngrams, candidate_utterance_vocab_pth, da_vocab_pth):
         super(DST, self).__init__()
 
         # instantiate candidate_embedding
@@ -28,12 +27,10 @@ class DST(nn.Module):
 
         self.system_dialogue_acts = DialogueActsLSTM(da_embed_size, da_hidden_dim, batch_size, self.da_embeddings,
                 self.da_vocab)
-
         # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
         #                                               A_i = system actions, C_ij = candidate encoding=
         self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
         self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots)
-
 
     def get_turncontext(self, turn):
         """ Compute turn context -- dependent on user utterance, system dialogue acts, 
@@ -112,9 +109,15 @@ class SentenceBiLSTM(nn.Module):
 
 
     def init_hidden(self):
-        return (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
-                Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()))
 
+        if torch.cuda.is_available():
+            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
+                Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()))
+        else: 
+            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim)),
+                Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
+        return hidden
+   
     def forward(self, sentence_idx):
         embeds = self.candidate_encoder(sentence_idx).view(len(sentence_idx), self.batch_size, -1)
         encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds, self.hidden)
@@ -130,7 +133,7 @@ class HierarchicalLSTM(nn.Module):
     """
     def __init__(self, embedding_dim, hidden_dim, batch_size):
         super().__init__()
-        self.hierarchical_lstm = nn.LSTM(embedding_dim,hidden_dim) 
+        self.hierarchical_lstm = nn.LSTM(embedding_dim,hidden_dim)
 
     def forward(self, encoded_past_utterances):
         """
@@ -141,6 +144,7 @@ class HierarchicalLSTM(nn.Module):
         """
         # NOTE: batch_size=1 currently, may need to think about padding to longest source len if changes
         #stacked_utterances: Tensor(src_len, batch_size, embedding_dim)
+        
         stacked_utterances = torch.stack(encoded_past_utterances)
         hidden_sts, (last_hidden, last_cell) = self.hierarchical_lstm(stacked_utterances)
 
@@ -159,6 +163,7 @@ class PreviousStateEncoding(nn.Module):
 class DialogueActsLSTM(nn.Module):
     def __init__(self, emb_dim, hidden_dim, batch_size, da_embeddings, vocab):
         super(DialogueActsLSTM, self).__init__()
+
         """
         --emb_dim: default 50
         --hidden_dim: default 64
