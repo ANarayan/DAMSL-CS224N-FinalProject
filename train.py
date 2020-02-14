@@ -136,6 +136,9 @@ if __name__ == '__main__':
             'batch_size' : 32,
             'num_slots' : 35,
             'vocab' : candidate_vocabulary
+            'ngrams' : 1,
+            'candidate_utterance_vocab_pth' : 'vocab.json',
+            'da_vocab_pth': 'da_vocab.json'
         }
 
         training_params = {
