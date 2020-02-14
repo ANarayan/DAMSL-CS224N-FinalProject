@@ -1,5 +1,7 @@
 import argparse
+from torch.autograd import Variable
 import logging
+import json
 import os
 
 import torch
@@ -23,8 +25,11 @@ parser.add_argument('--model_dir', default='experiments/', help="Directory conta
 
 def train(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params):
     model.train()
-    training_generator = DataLoader(training_data, **dataset_params)
-    validation_generator = DataLoader(validation_data, **dataset_params)
+    #training_generator = DataLoader(training_data, **dataset_params)
+    #validation_generator = DataLoader(validation_data, **dataset_params)
+
+    training_generator = training_data.data_iterator(3, False)
+    validation_generator = validation_data.data_iterator(3, False)
 
     total_epochs = training_params['num_epochs']
 
@@ -35,21 +40,18 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
         total_loss_eval = 0
 
         # TRAINING
-        for turn, turn_label in training_generator:
-            # Generate context feature vector
-            # Compute loss for each candidate
-            context_vector = model.get_turncontext(turn)
-            
-            candidates = turn['candidates']
-            # iterate through each candidate and compute the loss
-            for index, candidate in enumerate(candidates):
-                # candidate_gtlabel --> Dim: (# of slots x 1)
-                candidate_gtlabel = turn_label[index].unsqueeze(1)
+        for i in range(training_data.__len__()):
+            try:
+                turn_and_cand, cand_label = next(training_generator)
 
-                # compute model output + loss on the turn + candidate pair
-                output = model.forward(context_vector, candidate) 
-                loss_func = nn.BCELoss(reduction='none')
-                loss = loss_func(output, candidate_gtlabel)
+                context_vectors = torch.stack([model.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
+                candidates = torch.tensor([cand_dict['candidate'] for cand_dict in turn_and_cand])
+
+                output = model.forward(context_vectors, candidates) 
+
+                # need to weight loss due to the imbalance in positive to negative examples 
+                loss_func = nn.BCELoss(weight= 20, reduction='none')
+                loss = loss_func(output, cand_label)
 
                 # clear prev. gradients, compute gradients of all variables wrt loss
                 optimizer.zero_grad()
@@ -60,26 +62,28 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
             
                 # add to total loss
                 total_loss_train += loss.item()
+
+            # no more batches left
+            except StopIteration:
+                break
         
         avg_loss_train = total_loss_train/len(training_generator)
         logging.info("Average Training loss: {}".format(avg_loss_train))
 
-        # EVALUATION
-        for turn, turn_label in validation_generator:
-            # Generate context feature vector
-            # Compute loss for each candidate
-            context_vector = model.get_turncontext(turn)
-            
-            candidates = turn['candidates']
-            # iterate through each candidate and compute the loss
-            for index, candidate in enumerate(candidates):
-                # candidate_gtlabel --> Dim: (# of slots x 1)
-                candidate_gtlabel = turn_label[index].unsqueeze(1)
 
-                # compute model output + loss on the turn + candidate pair
-                output = model.forward(context_vector, candidate) 
-                loss_func = nn.BCELoss(reduction='none')
-                loss = loss_func(output, candidate_gtlabel)
+        # Evaluation
+        for i in range(training_data.__len__()):
+            try:
+                turn_and_cand, cand_label = next(training_generator)
+
+                context_vectors = torch.stack([model.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
+                candidates = torch.tensor([cand_dict['candidate'] for cand_dict in turn_and_cand])
+
+                output = model.forward(context_vectors, candidates) 
+
+                # need to weight loss due to the imbalance in positive to negative examples 
+                loss_func = nn.BCELoss(weight= 20, reduction='none')
+                loss = loss_func(output, cand_label)
 
                 # clear prev. gradients, compute gradients of all variables wrt loss
                 optimizer.zero_grad()
@@ -90,6 +94,11 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
             
                 # add to total loss
                 total_loss_eval += loss.item()
+
+            # no more batches left
+            except StopIteration:
+                break
+
         
         avg_loss_eval = total_loss_eval/len(validation_generator)
         logging.info("Average Training loss: {}".format(avg_loss_eval))
@@ -98,8 +107,16 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
+    TRAIN_FILE_NAME = 'restaurant_hyst_train.pkl'
+    VAL_FILE_NAME = 'restaurant_hyst_val.pkl'
+    TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
+
     # first load parameters from params.json
     args = parser.parse_args()
+
+    # Load in candidate vocab
+    with open('vocab.json') as cand_vocab:
+        candidate_vocabulary = json.load(cand_vocab)['1']
 
     if USING_MODEL_CONFIGFILE:
         json_path = os.path.join(args.model_dir, 'params.json')
@@ -118,6 +135,7 @@ if __name__ == '__main__':
             'ff_hidden_dim' : 256, 
             'batch_size' : 32,
             'num_slots' : 35,
+            'vocab' : candidate_vocabulary
             'ngrams' : 1,
             'candidate_utterance_vocab_pth' : 'vocab.json',
             'da_vocab_pth': 'da_vocab.json'
@@ -129,7 +147,7 @@ if __name__ == '__main__':
         }
 
         dataset_params = {
-            'batch_size': 1,
+            'batch_size': 2,
             'shuffle': True,
             'num_workers': 1
         }
@@ -139,8 +157,9 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # Load data
-    training_data = DialoguesDataset(os.path.join(args.data_dir, '/train.pkl'))
-    validation_data = DialoguesDataset(os.path.join(args.data_dir, '/val.pkl'))
+    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME))
+    validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME))
+
     
     logging.info("-done")
 

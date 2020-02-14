@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from dataset import Vocab
+#from dataset import Vocab
 
 class Embeddings(nn.Module):
     """Lookup of embeddings for all tokens in the train/valid/test vocabulary"""
