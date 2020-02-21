@@ -46,7 +46,8 @@ class DialoguesDataset(Dataset):
         # returns turn information and gt labels associated with each candidate for in the turn
         return turn_cand_dict
 
-    def data_iterator(self, batch_size, shuffle=False):
+    def data_iterator(self, batch_size=1, shuffle=False):
+        # print(batch_size)
         order = list(range(self.__len__()))
         if shuffle:
             random.seed(230)
@@ -57,14 +58,14 @@ class DialoguesDataset(Dataset):
             batch_datapoints = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
             batch_labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
 
-        batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
+            batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
 
-        if torch.cuda.is_available():
-            batch_data, batch_labels = batch_data.cuda(), batch_labels.cuda()
-        
-        #print(batch_data.type)
+            if torch.cuda.is_available():
+                batch_data, batch_labels = batch_data.cuda(), batch_labels.cuda()
+            
+            #print(batch_data.type)
 
-        yield batch_datapoints, batch_labels
+            yield batch_data, batch_labels
 
 
 

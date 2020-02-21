@@ -19,16 +19,16 @@ class DST(nn.Module):
 
         # instantiate candidate_embedding
         self.candidate_utterance_vocab = Vocab.load_from_json(candidate_utterance_vocab_pth, ngrams)
-        self.da_vocab = DAVocab.load_from_json(da_vocab_pth)
+        self.da_vocab = DAVocab.load_from_json(da_vocab_pth, ngrams=None)
         self.candidate_utterance_embeddings = Embeddings(embed_dim, self.candidate_utterance_vocab)
         self.da_embeddings = Embeddings(da_embed_size, self.da_vocab)
         self.sentence_encoder = SentenceBiLSTM(sentence_hidden_dim, embed_dim, self.candidate_utterance_embeddings, batch_size)
-        self.hierarchial_encoder = HierarchicalLSTM(sentence_hidden_dim, hierarchial_hidden_dim)
+        self.hierarchial_encoder = HierarchicalLSTM(sentence_hidden_dim*2, hierarchial_hidden_dim, batch_size)
 
         self.system_dialogue_acts = DialogueActsLSTM(da_embed_size, da_hidden_dim, batch_size, self.da_embeddings,
                 self.da_vocab)
         # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
-        #                                               A_i = system actions, C_ij = candidate encoding=
+        #                                               A_i = system actions, C_ij = candidate encoding
         self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
         self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots)
 
@@ -42,7 +42,7 @@ class DST(nn.Module):
             @return utterance_enc (Tensor): encoded utterance 
         """
         user_utterance = turn['user_utterance']
-        system_dialogue_acts = turn['system_actions_formatted']
+        system_dialogue_acts = turn['system_dialogue_acts']
         past_utterances = turn['utterance_history']
         
         # TODO: Parallelize this computation
@@ -54,16 +54,22 @@ class DST(nn.Module):
             encoded_past_utterances.append(encoded_sent)
         
         # get encoded user utterance for the current turn
+        # self.system_dialogue_acts(da_idxs) returns ((1,512))
         utterance_enc = encoded_past_utterances[-1]
 
         #system_dialogue_acts = List(Strings)
-        da_idxs = self.da_vocab.to_idxs_tensor(system_dialogue_acts)
-        dialogue_acts_enc = self.system_dialogue_acts(da_idxs)
+        da_idxs = self.da_vocab.to_idxs_tensor(system_dialogue_acts, isDialogueVocab=True)
+        # self.system_dialogue_acts(da_idxs) returns ((1,1,64))
+        dialogue_acts_enc = self.system_dialogue_acts(da_idxs).squeeze(dim=0)
 
         #encoded_past_utterances: List[Tensors(Dim: ((sentence_hidden_dim * 2) x 1))]
-        dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances)
+        # self.hierarchial_encoder(encoded_past_utterances) returns: ((1, 1, 512))
+        dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances).squeeze(dim=0)
 
         # concatenate three features together to create context featue vector
+        # print(dialogue_acts_enc.size())
+        # print(utterance_enc.size())
+        # print(dialogue_context_enc.size())
         context = torch.cat([utterance_enc, dialogue_context_enc, dialogue_acts_enc],1)
         return context
 
@@ -71,14 +77,20 @@ class DST(nn.Module):
     def forward(self, turn_context, candidate):
         """ Forward pass for a turn/candidate pair
             @param turn_context (Tensor): vector which is a concatenation of encoded utterance
-                                    dialogue history, and system actions
+                                    dialogue history, and system actions: # Tensor: (batch_size, 1, context_encoding)
             @param candidate (String): slot candidate
             @returns predicted (Tensor): output vector representing the per slot prediction for
                         each candidate (num_slots x 1)
         """
-        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate)
-        embed_cand = self.candidate_utterance_embeddings(candidate_idx)
-        feed_forward_input = torch.cat((turn_context, embed_cand))
+        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate) 
+        embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx) # Tensor: (1, batch_size, cand_embed_size)
+
+        embed_cand = embed_cand.permute(1,0,2)
+
+        #print(turn_context.size())
+        #print(embed_cand.size())
+        feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
+        #print(feed_forward_input.size())
         output = self.classification_net(feed_forward_input)
         return output
          
@@ -94,7 +106,8 @@ class SentenceBiLSTM(nn.Module):
         @param batch_size (int): batch_size
         """
         super(SentenceBiLSTM, self).__init__()
-        self.batch_size = batch_size
+        #self.batch_size = batch_size
+        self.batch_size = 1
         self.hidden_dim = hidden_dim
         self.embedding_dim = embed_dim
 
@@ -119,7 +132,9 @@ class SentenceBiLSTM(nn.Module):
         return hidden
    
     def forward(self, sentence_idx):
-        embeds = self.candidate_encoder(sentence_idx).view(len(sentence_idx), self.batch_size, -1)
+        embeds = self.candidate_encoder.embeddings(sentence_idx).view((len(sentence_idx[0]),1,self.embedding_dim))
+        print(embeds.size())
+        #embeds = self.candidate_encoder.embeddings(sentence_idx).view((len(sentence_idx), 1, -1))
         encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds, self.hidden)
 
         #`last_hidden` is a tensor shape (2, b, h). The first dimension corresponds to forwards and backwards passes.
@@ -156,7 +171,7 @@ class PreviousStateEncoding(nn.Module):
         Unused in the HyST version of the model
         """
         super().__init__()
-        self.emb_size = emb_size
+        self.emb_size = emb_dim
         self.s_dim = max_n_states
         self.emb = nn.Embedding(self.s_dim, self.emb_size)
 
@@ -170,6 +185,7 @@ class DialogueActsLSTM(nn.Module):
         --da_embeddings: Embeddings lookup for dialogue acts
         --vocab: Vocab object
         """
+        self.embed_dim = emb_dim
         self.batch_size = batch_size
         self.da_embeddings = da_embeddings
         self.vocab = vocab
@@ -180,7 +196,7 @@ class DialogueActsLSTM(nn.Module):
         --dialogue_acts_idxs: Tensor(t dialogue acts, max len of dialogue acts in single turn out of last t turns) 
 
         """
-        embs = self.da_embeddings(dialogue_acts_idxs).view(dialogue_acts_idxs.shape[1], batch_size, -1)
+        embs = self.da_embeddings.embeddings(dialogue_acts_idxs).view(dialogue_acts_idxs.shape[1], 1, self.embed_dim)
         enc_hiddens, (last_hidden, last_cell) = self.da_lstm(embs)
         return last_hidden
 
@@ -209,7 +225,7 @@ class ClassificationNet(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         output =  self.slot_projection(x)
-        return F.logsigmoid(output)
+        return output
 
 
 

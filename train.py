@@ -23,13 +23,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/', help='Directory which contain the dialogue dataset')
 parser.add_argument('--model_dir', default='experiments/', help="Directory containing model config file")
 
-def train(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params):
+def train(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params, device):
     model.train()
     #training_generator = DataLoader(training_data, **dataset_params)
     #validation_generator = DataLoader(validation_data, **dataset_params)
 
-    training_generator = training_data.data_iterator(3, False)
-    validation_generator = validation_data.data_iterator(3, False)
+    print(dataset_params['batch_size'])
+    training_generator = training_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False)
+    validation_generator = validation_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False)
 
     total_epochs = training_params['num_epochs']
 
@@ -45,23 +46,30 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
                 turn_and_cand, cand_label = next(training_generator)
 
                 context_vectors = torch.stack([model.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
-                candidates = torch.tensor([cand_dict['candidate'] for cand_dict in turn_and_cand])
 
-                output = model.forward(context_vectors, candidates) 
+                candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
+
+                output = model.forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
+
+                output = output.squeeze(dim=1)
+                # print(output.size())
 
                 # need to weight loss due to the imbalance in positive to negative examples 
-                loss_func = nn.BCELoss(weight= 20, reduction='none')
+                # TODO: need to fix weightage
+                loss_func = nn.BCEWithLogitsLoss(reduction='none')
                 loss = loss_func(output, cand_label)
 
+                # print(loss)
                 # clear prev. gradients, compute gradients of all variables wrt loss
                 optimizer.zero_grad()
-                loss.backward()
+                loss.sum().backward()
 
                 # perform update
                 optimizer.step()
             
                 # add to total loss
-                total_loss_train += loss.item()
+                # TODO: CHECK THIS
+                total_loss_train += loss.sum().item()
 
             # no more batches left
             except StopIteration:
@@ -111,6 +119,9 @@ if __name__ == '__main__':
     VAL_FILE_NAME = 'restaurant_hyst_val.pkl'
     TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
 
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
     # first load parameters from params.json
     args = parser.parse_args()
 
@@ -130,15 +141,14 @@ if __name__ == '__main__':
             'embed_dim' : 300, 
             'sentence_hidden_dim' : 256, 
             'hierarchial_hidden_dim' : 512,
-            'da_hidden_dim' : 16, 
-            'da_embed_size' : 64,
+            'da_hidden_dim' : 64, 
+            'da_embed_size' : 50,
             'ff_hidden_dim' : 256, 
-            'batch_size' : 32,
+            'batch_size' : 2,
             'num_slots' : 35,
-            'vocab' : candidate_vocabulary,
-            'ngrams' : 1,
+            'ngrams' : '1',
             'candidate_utterance_vocab_pth' : 'vocab.json',
-            'da_vocab_pth': 'da_vocab.json'
+            'da_vocab_pth': 'davocab.json'
         }
 
         training_params = {
@@ -174,4 +184,4 @@ if __name__ == '__main__':
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(training_params['num_epochs']))
 
-    train(model, training_data, validation_data, optimizer, args.model_dir, training_params, dataset_params)
+    train(model, training_data, validation_data, optimizer, args.model_dir, training_params, dataset_params, device)
