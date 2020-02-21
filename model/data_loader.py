@@ -2,6 +2,7 @@ import os
 import torch
 import numpy as np 
 from torch.utils.data import Dataset, DataLoader
+from torch.autograd import Variable
 import pickle
 import random
 
@@ -14,39 +15,64 @@ class DialoguesDataset(Dataset):
     def __init__(self, data_file):
         """
         Args:
-            data_file (string): Path to pickle file with dialogues.
+            data_file (string): Path to pickle file with turn+candidate pairs.
         """
         dialogue_data = open(data_file, 'rb') 
-        self.dialogues = pickle.load(dialogue_data)
+        self.turn_cand_dps= pickle.load(dialogue_data)
     
     def __len__(self):
-        return len(self.dialogues)
+        return len(self.turn_cand_dps)
 
-    def __getitem__(self, dialogue_idx):
+    def __getitem__(self, turn_idx):
         """
             @param dialogue_idx (int): idx of dialogue we are querying data from
             @return turn (Dict): a dictionary which contains context for a randomly 
                                 sampled invidual turn in the given dialogue
         """
-        dialogue_dict = self.dialogues[dialogue_idx]
-        dialogue_turns = dialogue_dict['dialogue']
-        turn_keys = list(dialogue_turns.keys())
-        random_turn_idx = random.choice(turn_keys)
-
-        turn_dict = dialogue_turns[random_turn_idx]
-        turn_dict['utterance_history'] = []
-
-        for idx in range(0, random_turn_idx):
-            turn_dict['utterance_history'].append(dialogue_turns[idx]['user_utterance'])
-        
-        # add the current turn utterances to the history
-        turn_dict['utterance_history'].append(turn_dict['user_utterance'])
+        """
+        turn_cand_dict : {
+            'user_utterance': List[String],
+            'utterance_history': List[List[String]],
+            'system_dialogue_acts': List[String],
+            'candidate' : String,
+            'gt_label' : array
+        }
+        """
+        turn_cand_dict = self.turn_cand_dps[turn_idx]
 
         # get label and convert to tensor
-        label = torch.Tensor(turn_dict['gt_labels'])
+        label = torch.Tensor(turn_cand_dict['gt_label'])
 
         # returns turn information and gt labels associated with each candidate for in the turn
-        return turn_dict, label
+        return turn_cand_dict
+
+    def data_iterator(self, batch_size, shuffle=False):
+        order = list(range(self.__len__()))
+        if shuffle:
+            random.seed(230)
+            random.shuffle(order)
+        
+        # take one pass over data in the dataset
+        for i in range(self.__len__() // batch_size):
+            batch_datapoints = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
+            batch_labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+
+        batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
+
+        if torch.cuda.is_available():
+            batch_data, batch_labels = batch_data.cuda(), batch_labels.cuda()
+        
+        #print(batch_data.type)
+
+        yield batch_datapoints, batch_labels
+
+
+
+
+
+
+    
+
 
 
         

@@ -1,0 +1,129 @@
+2020-02-12 00:11:29,459:INFO: Loading the datasets...
+2020-02-12 00:12:12,982:INFO: Loading the datasets...
+2020-02-12 00:12:14,712:INFO: -done
+2020-02-12 00:26:47,050:INFO: Loading the datasets...
+2020-02-12 00:26:48,829:INFO: -done
+2020-02-12 00:29:56,719:INFO: Loading the datasets...
+2020-02-12 00:29:58,912:INFO: -done
+2020-02-12 00:29:58,966:INFO: Starting training for 5 epoch(s)
+2020-02-12 00:29:58,966:INFO: Epoch 1/5
+2020-02-12 00:31:40,867:INFO: Loading the datasets...
+2020-02-12 00:31:43,334:INFO: -done
+2020-02-12 00:31:43,360:INFO: Starting training for 5 epoch(s)
+2020-02-12 00:31:43,360:INFO: Epoch 1/5
+2020-02-12 00:33:17,597:INFO: Loading the datasets...
+2020-02-12 00:33:20,439:INFO: -done
+2020-02-12 00:33:20,463:INFO: Starting training for 5 epoch(s)
+2020-02-12 00:33:20,463:INFO: Epoch 1/5
+2020-02-12 00:37:01,412:INFO: Loading the datasets...
+2020-02-12 00:37:03,515:INFO: -done
+2020-02-12 00:37:03,540:INFO: Starting training for 5 epoch(s)
+2020-02-12 00:37:03,540:INFO: Epoch 1/5
+2020-02-12 00:41:45,449:INFO: Loading the datasets...
+2020-02-12 00:41:47,651:INFO: -done
+2020-02-12 00:41:47,677:INFO: Starting training for 5 epoch(s)
+2020-02-12 00:41:47,677:INFO: Epoch 1/5
+2020-02-12 01:02:08,712:INFO: Loading the datasets...
+2020-02-12 01:02:10,474:INFO: -done
+2020-02-12 01:02:10,524:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:02:10,525:INFO: Epoch 1/5
+2020-02-12 01:04:15,004:INFO: Loading the datasets...
+2020-02-12 01:04:17,105:INFO: -done
+2020-02-12 01:04:17,133:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:04:17,133:INFO: Epoch 1/5
+2020-02-12 01:06:04,810:INFO: Loading the datasets...
+2020-02-12 01:06:07,093:INFO: -done
+2020-02-12 01:06:07,116:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:06:07,116:INFO: Epoch 1/5
+2020-02-12 01:06:28,220:INFO: Loading the datasets...
+2020-02-12 01:06:29,863:INFO: -done
+2020-02-12 01:06:29,888:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:06:29,889:INFO: Epoch 1/5
+2020-02-12 01:06:47,197:INFO: Loading the datasets...
+2020-02-12 01:06:49,847:INFO: -done
+2020-02-12 01:06:49,872:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:06:49,872:INFO: Epoch 1/5
+2020-02-12 01:07:15,885:INFO: Loading the datasets...
+2020-02-12 01:07:17,885:INFO: -done
+2020-02-12 01:07:17,912:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:07:17,913:INFO: Epoch 1/5
+2020-02-12 01:08:21,364:INFO: Loading the datasets...
+2020-02-12 01:08:24,315:INFO: -done
+2020-02-12 01:08:24,347:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:08:24,347:INFO: Epoch 1/5
+2020-02-12 01:09:04,887:INFO: Loading the datasets...
+2020-02-12 01:09:07,297:INFO: -done
+2020-02-12 01:09:07,326:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:09:07,327:INFO: Epoch 1/5
+2020-02-12 01:11:55,180:INFO: Loading the datasets...
+2020-02-12 01:11:56,787:INFO: -done
+2020-02-12 01:11:56,813:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:11:56,813:INFO: Epoch 1/5
+2020-02-12 01:13:21,528:INFO: Loading the datasets...
+2020-02-12 01:13:24,009:INFO: -done
+2020-02-12 01:13:24,036:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:13:24,036:INFO: Epoch 1/5
+2020-02-12 01:16:58,166:INFO: Loading the datasets...
+2020-02-12 01:16:59,823:INFO: -done
+2020-02-12 01:16:59,849:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:16:59,849:INFO: Epoch 1/5
+2020-02-12 01:17:32,264:INFO: Loading the datasets...
+2020-02-12 01:17:34,095:INFO: -done
+2020-02-12 01:17:34,119:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:17:34,119:INFO: Epoch 1/5
+2020-02-12 01:18:24,105:INFO: Loading the datasets...
+2020-02-12 01:18:26,588:INFO: -done
+2020-02-12 01:18:26,611:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:18:26,611:INFO: Epoch 1/5
+2020-02-12 01:20:59,156:INFO: Loading the datasets...
+2020-02-12 01:21:01,375:INFO: -done
+2020-02-12 01:21:01,399:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:21:01,399:INFO: Epoch 1/5
+2020-02-12 01:21:42,578:INFO: Loading the datasets...
+2020-02-12 01:21:44,087:INFO: -done
+2020-02-12 01:21:44,113:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:21:44,114:INFO: Epoch 1/5
+2020-02-12 01:22:27,945:INFO: Loading the datasets...
+2020-02-12 01:22:29,789:INFO: -done
+2020-02-12 01:22:29,814:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:22:29,814:INFO: Epoch 1/5
+2020-02-12 01:22:56,898:INFO: Loading the datasets...
+2020-02-12 01:22:58,604:INFO: -done
+2020-02-12 01:22:58,627:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:22:58,628:INFO: Epoch 1/5
+2020-02-12 01:36:02,054:INFO: Loading the datasets...
+2020-02-12 01:36:04,733:INFO: -done
+2020-02-12 01:36:04,756:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:36:04,757:INFO: Epoch 1/5
+2020-02-12 01:36:49,375:INFO: Loading the datasets...
+2020-02-12 01:36:50,819:INFO: -done
+2020-02-12 01:36:50,842:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:36:50,843:INFO: Epoch 1/5
+2020-02-12 01:38:17,836:INFO: Loading the datasets...
+2020-02-12 01:38:19,420:INFO: -done
+2020-02-12 01:38:19,443:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:38:19,443:INFO: Epoch 1/5
+2020-02-12 01:40:29,970:INFO: Loading the datasets...
+2020-02-12 01:40:32,003:INFO: -done
+2020-02-12 01:40:32,028:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:40:32,029:INFO: Epoch 1/5
+2020-02-12 01:41:03,225:INFO: Loading the datasets...
+2020-02-12 01:41:05,295:INFO: -done
+2020-02-12 01:41:05,321:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:41:05,321:INFO: Epoch 1/5
+2020-02-12 01:49:38,711:INFO: Loading the datasets...
+2020-02-12 01:49:41,740:INFO: -done
+2020-02-12 01:49:41,769:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:49:41,769:INFO: Epoch 1/5
+2020-02-12 01:50:51,417:INFO: Loading the datasets...
+2020-02-12 01:50:53,218:INFO: -done
+2020-02-12 01:50:53,243:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:50:53,243:INFO: Epoch 1/5
+2020-02-12 01:57:40,690:INFO: Loading the datasets...
+2020-02-12 01:57:42,798:INFO: -done
+2020-02-12 01:57:42,823:INFO: Starting training for 5 epoch(s)
+2020-02-12 01:57:42,823:INFO: Epoch 1/5
+2020-02-12 08:18:50,448:INFO: Loading the datasets...
+2020-02-12 08:18:52,671:INFO: -done
+2020-02-12 08:18:52,795:INFO: Starting training for 5 epoch(s)
+2020-02-12 08:18:52,796:INFO: Epoch 1/5
