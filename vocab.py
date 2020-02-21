@@ -72,7 +72,6 @@ class Vocab():
         
     def new_from_domains(self, domains=DOMAINS, data_dir=DATA_DIR):
         """New Vocab from pickled formatted training data"""
-        self.fill_special_toks()
         for d in domains:
             self.update_from_pkl(Path(data_dir) / '{}_dials_hyst.pkl'.format(d), 'pkl')
 
@@ -155,12 +154,6 @@ class DAVocab(Vocab):
         if not word_to_id:
             word_to_id = {}
         self.word_to_id = word_to_id
-
-    def fill_special_toks(self):
-        # TODO: Need to overload parent fill_special_toks
-        for i, sptok in enumerate(SPECIAL_TOKS):
-            self.word_to_id[sptok] = i
-        
 
     def update_from_pkl(self, pth, ftype):
         i = len(self.word_to_id)
