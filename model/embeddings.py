@@ -7,5 +7,5 @@ class Embeddings(nn.Module):
     """Lookup of embeddings for all tokens in the train/valid/test vocabulary"""
     def __init__(self, emb_dim, vocab):
         super().__init__()
-        self.embeddings = nn.Embeddings(len(vocab), emb_dim)
+        self.embeddings = nn.Embedding(len(vocab), emb_dim)
 

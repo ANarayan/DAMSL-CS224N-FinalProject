@@ -3,6 +3,7 @@ import nltk
 import json
 import pickle as pkl
 import logging
+import torch
 from argparse import ArgumentParser
 from pathlib import Path
 from nltk import word_tokenize
@@ -39,6 +40,7 @@ class Vocab():
         if word_to_id == None:
             word_to_id = {}
         self.word_to_id = word_to_id
+        self.fill_special_toks()
         self.ngrams = n_grams
     
     def _input_to_indices(self, toks):
@@ -48,11 +50,11 @@ class Vocab():
         if type(toks) == str:
             return [[self.word_to_id[toks]]]
         elif type(toks[0]) == str:
-            return [[self.word_to_id[tok] for tok in toks]]
+            return [[self.word_to_id[tok] if tok in self.word_to_id.keys() else self.word_to_id[UNKNOWN] for tok in toks ]]
         elif type(toks[0]) == list:
             return [[self.word_to_id[tok] for tok in sent] for sent in toks]
 
-    def to_idxs_tensor(self, input_to_embed, device=None):
+    def to_idxs_tensor(self, input_to_embed, isDialogueVocab=False, device=None):
         """
         Converts a list of candidates/system dialogue acts to input tensor
 
@@ -60,14 +62,18 @@ class Vocab():
         --device: (torch.device)
         """
         indices = self._input_to_indices(input_to_embed)
-        #Pad 
-        if type(toks) != str:
-            indices = pad(indices, self.word_to_idx[PAD])
-        ind_tens = torch.Tensor(indices, dtype=torch.int64, device=device)
+        # Pad 
+        # TODO: check with Josh about the purpose of the if-statement below
+        """if type(toks) != str:
+            indices = pad(indices, self.word_to_id[PAD])"""
+        if isDialogueVocab is False:
+            indices = pad(indices, self.word_to_id[PAD])
+        # print(indices)
+        ind_tens = torch.tensor(indices, dtype=torch.int64, device=device)
+        return ind_tens
         
     def new_from_domains(self, domains=DOMAINS, data_dir=DATA_DIR):
         """New Vocab from pickled formatted training data"""
-
         self.fill_special_toks()
         for d in domains:
             self.update_from_pkl(Path(data_dir) / '{}_dials_hyst.pkl'.format(d), 'pkl')
@@ -111,9 +117,22 @@ class Vocab():
         return i  
     
     @classmethod
-    def load_from_json(cls, pth, ngrams):
-        vocab = json.load(open(pth, 'r'))[ngrams]
-        return Vocab(ngrams, vocab)
+    def load_from_json(cls, pth, ngrams=None):
+        """
+            @ param ngrams (List[String]): list of characters which denotes what type of ngrams to include in the vocabulary (i.e ['1', '2'] --> unigram, bigram)
+                                            ngrams set to None if we are loading in from the dialogue acts vocabulary
+
+        """
+        vocab_dict = {}
+        if ngrams is not None:
+            for ngram in ngrams:
+                new_entries = json.load(open(pth, 'r'))[ngram]
+                vocab_dict.update(new_entries)
+                
+        else:
+            vocab_dict = json.load(open(pth, 'r'))
+
+        return Vocab(ngrams, vocab_dict)
 
     def save_to_json(self, pth):
         pth = Path(pth)
@@ -138,8 +157,10 @@ class DAVocab(Vocab):
         self.word_to_id = word_to_id
 
     def fill_special_toks(self):
-        # Need to overload parent fill_special_toks
-        return
+        # TODO: Need to overload parent fill_special_toks
+        for i, sptok in enumerate(SPECIAL_TOKS):
+            self.word_to_id[sptok] = i
+        
 
     def update_from_pkl(self, pth, ftype):
         i = len(self.word_to_id)

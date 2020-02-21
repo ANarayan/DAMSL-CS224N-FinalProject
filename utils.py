@@ -33,8 +33,8 @@ def set_logger(log_path):
 
 
 def pad(idxs_to_pad, pad_idx):
-    max_len = sorted(idxs_to_pad, key=len, reverse=True)[0]
+    max_len = len(sorted(idxs_to_pad, key=len, reverse=True)[0])
     for idxs in idxs_to_pad:
-        idxs.extend([pad_idx] * max_len - len(idxs))
+        idxs.extend([pad_idx] * (max_len - len(idxs)))
     return idxs_to_pad
 
