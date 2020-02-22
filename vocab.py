@@ -64,8 +64,6 @@ class Vocab():
         indices = self._input_to_indices(input_to_embed)
         # Pad 
         # TODO: check with Josh about the purpose of the if-statement below
-        """if type(toks) != str:
-            indices = pad(indices, self.word_to_id[PAD])"""
         if isDialogueVocab is False:
             indices = pad(indices, self.word_to_id[PAD])
         # print(indices)
@@ -74,7 +72,6 @@ class Vocab():
         
     def new_from_domains(self, domains=DOMAINS, data_dir=DATA_DIR):
         """New Vocab from pickled formatted training data"""
-        self.fill_special_toks()
         for d in domains:
             self.update_from_pkl(Path(data_dir) / '{}_dials_hyst.pkl'.format(d), 'pkl')
 
@@ -106,12 +103,14 @@ class Vocab():
             dials = json.load(open(pth, 'r'))
         for dial in dials:
             for turn in dial['dialogue'].keys():
-                toks = word_tokenize(dial['dialogue'][turn].get('user_utterance', ''))    
+                toks = word_tokenize(dial['dialogue'][turn].get('user_utterance', ''))
+                candidates = [ut for ut in dial['dialogue'][turn].get('user_utterance','').split() if ut.isalpha()]
                 if self.ngrams > 1:
                     toks = ngrams(toks, self.ngrams)
                     toks = [' '.join(tok) for tok in toks]
-                for tok in toks:
-                    i = self.update(tok, i)
+                    candidates = ngrams(candidates)
+                for t in toks + candidates:
+                    i = self.update(t, i)
         
         # len of updated vocab
         return i  
@@ -155,12 +154,6 @@ class DAVocab(Vocab):
         if not word_to_id:
             word_to_id = {}
         self.word_to_id = word_to_id
-
-    def fill_special_toks(self):
-        # TODO: Need to overload parent fill_special_toks
-        for i, sptok in enumerate(SPECIAL_TOKS):
-            self.word_to_id[sptok] = i
-        
 
     def update_from_pkl(self, pth, ftype):
         i = len(self.word_to_id)

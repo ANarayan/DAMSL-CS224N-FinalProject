@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from torch import optim
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch.nn.functional as F
 import random
 import numpy as np
@@ -23,7 +24,7 @@ class DST(nn.Module):
         self.candidate_utterance_embeddings = Embeddings(embed_dim, self.candidate_utterance_vocab)
         self.da_embeddings = Embeddings(da_embed_size, self.da_vocab)
         self.sentence_encoder = SentenceBiLSTM(sentence_hidden_dim, embed_dim, self.candidate_utterance_embeddings, batch_size)
-        self.hierarchial_encoder = HierarchicalLSTM(sentence_hidden_dim*2, hierarchial_hidden_dim, batch_size)
+        self.hierarchial_encoder = HierarchicalLSTM(sentence_hidden_dim*2, hierarchial_hidden_dim)
 
         self.system_dialogue_acts = DialogueActsLSTM(da_embed_size, da_hidden_dim, batch_size, self.da_embeddings,
                 self.da_vocab)
@@ -44,32 +45,27 @@ class DST(nn.Module):
         user_utterance = turn['user_utterance']
         system_dialogue_acts = turn['system_dialogue_acts']
         past_utterances = turn['utterance_history']
+        #To optimize with pack_padded_sequence in self.sentence_encoder, if necessary
+        utterances_lengths = [len(utt) for utt in past_utterances]
         
-        # TODO: Parallelize this computation
-        encoded_past_utterances = []
-        for utterance in past_utterances:
-            #Map string to index tensor
-            utt_idx = self.candidate_utterance_vocab.to_idxs_tensor(utterance)
-            encoded_sent = self.sentence_encoder(utt_idx)
-            encoded_past_utterances.append(encoded_sent)
+        utt_idxs = self.candidate_utterance_vocab.to_idxs_tensor(past_utterances)
+        #utt_idxs_packed = pack_padded_sequence(utt_idxs, utterances_lengths)
+        encoded_past_utterances = self.sentence_encoder(utt_idxs)
         
         # get encoded user utterance for the current turn
         # self.system_dialogue_acts(da_idxs) returns ((1,512))
-        utterance_enc = encoded_past_utterances[-1]
+        utterance_enc = torch.index_select(encoded_past_utterances, 0, torch.tensor([len(encoded_past_utterances)
+            - 1]))
 
         #system_dialogue_acts = List(Strings)
         da_idxs = self.da_vocab.to_idxs_tensor(system_dialogue_acts, isDialogueVocab=True)
         # self.system_dialogue_acts(da_idxs) returns ((1,1,64))
         dialogue_acts_enc = self.system_dialogue_acts(da_idxs).squeeze(dim=0)
 
-        #encoded_past_utterances: List[Tensors(Dim: ((sentence_hidden_dim * 2) x 1))]
         # self.hierarchial_encoder(encoded_past_utterances) returns: ((1, 1, 512))
-        dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances).squeeze(dim=0)
+        dialogue_context_enc = self.hierarchial_encoder(encoded_past_utterances.unsqueeze(1)).squeeze(dim=0)
 
         # concatenate three features together to create context featue vector
-        # print(dialogue_acts_enc.size())
-        # print(utterance_enc.size())
-        # print(dialogue_context_enc.size())
         context = torch.cat([utterance_enc, dialogue_context_enc, dialogue_acts_enc],1)
         return context
 
@@ -83,12 +79,7 @@ class DST(nn.Module):
                         each candidate (num_slots x 1)
         """
         candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate) 
-        embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx) # Tensor: (1, batch_size, cand_embed_size)
-
-        embed_cand = embed_cand.permute(1,0,2)
-
-        #print(turn_context.size())
-        #print(embed_cand.size())
+        embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2) 
         feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
         #print(feed_forward_input.size())
         output = self.classification_net(feed_forward_input)
@@ -118,51 +109,33 @@ class SentenceBiLSTM(nn.Module):
         # input: embedded word representation of dim embed_size
         # output: sentence representation of dim hidden_size
         self.sentence_biLSTM = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
-        self.hidden = self.init_hidden()
-
-
-    def init_hidden(self):
-
-        if torch.cuda.is_available():
-            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
-                Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()))
-        else: 
-            hidden = (Variable(torch.zeros(2, self.batch_size, self.hidden_dim)),
-                Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
-        return hidden
    
     def forward(self, sentence_idx):
-        embeds = self.candidate_encoder.embeddings(sentence_idx).view((len(sentence_idx[0]),1,self.embedding_dim))
-        print(embeds.size())
-        #embeds = self.candidate_encoder.embeddings(sentence_idx).view((len(sentence_idx), 1, -1))
-        encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds, self.hidden)
+        embeds = self.candidate_encoder.embeddings(sentence_idx).permute(1,0,2).contiguous()
+        encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds)
 
         #`last_hidden` is a tensor shape (2, b, h). The first dimension corresponds to forwards and backwards passes.
         # Need to Concatenate the forwards and backwards tensors to obtain the final encoded utterance representation.
-        final_utt_rep = torch.cat((last_hidden[0], last_hidden[1]), 1)
-        return final_utt_rep
+
+        final_utt_reps = torch.cat((last_hidden[0], last_hidden[1]), 1)
+        return final_utt_reps
 
 class HierarchicalLSTM(nn.Module):
     """
     Encodes sentence 
     """
-    def __init__(self, embedding_dim, hidden_dim, batch_size):
+    def __init__(self, embedding_dim, hidden_dim):
         super().__init__()
         self.hierarchical_lstm = nn.LSTM(embedding_dim,hidden_dim)
 
     def forward(self, encoded_past_utterances):
         """
-        --encoded_past_utterances: List[Tensor(embedding_dim * 2, batch_size)] or len src_len
+        --encoded_past_utterances: List[Tensor(batch_size, utterance_emb_dim * 2)] or len src_len
 
         Returns:
-            last_hidden: Tensor(hidden_size, b)
+            last_hidden: Tensor(1, b, hidden_dim)
         """
-        # NOTE: batch_size=1 currently, may need to think about padding to longest source len if changes
-        #stacked_utterances: Tensor(src_len, batch_size, embedding_dim)
-        
-        stacked_utterances = torch.stack(encoded_past_utterances)
-        hidden_sts, (last_hidden, last_cell) = self.hierarchical_lstm(stacked_utterances)
-
+        hidden_sts, (last_hidden, last_cell) = self.hierarchical_lstm(encoded_past_utterances)
         return last_hidden 
 
 class PreviousStateEncoding(nn.Module):
