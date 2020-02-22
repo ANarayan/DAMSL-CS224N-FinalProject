@@ -29,6 +29,7 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
     #validation_generator = DataLoader(validation_data, **dataset_params)
 
     print(dataset_params['batch_size'])
+    batch_size = dataset_params['batch_size']
     training_generator = training_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False)
     validation_generator = validation_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False)
 
@@ -56,7 +57,9 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
 
                 # need to weight loss due to the imbalance in positive to negative examples 
                 # TODO: need to fix weightage
-                loss_func = nn.BCEWithLogitsLoss(reduction='none')
+                weights = [20.0] * 35
+                pos_weights = torch.tensor(weights)
+                loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
                 loss = loss_func(output, cand_label)
 
                 # print(loss)
@@ -75,8 +78,8 @@ def train(model, training_data, validation_data, optimizer, model_dir, training_
             except StopIteration:
                 break
         
-        avg_loss_train = total_loss_train/len(training_generator)
-        logging.info("Average Training loss: {}".format(avg_loss_train))
+            avg_loss_train = total_loss_train/((+1)*batch_size * 35)
+            logging.info("Average Training loss: {}".format(avg_loss_train))
 
 
         # Evaluation
