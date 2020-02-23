@@ -52,7 +52,7 @@ class Vocab():
         elif type(toks[0]) == str:
             return [[self.word_to_id[tok] if tok in self.word_to_id.keys() else self.word_to_id[UNKNOWN] for tok in toks ]]
         elif type(toks[0]) == list:
-            return [[self.word_to_id[tok] for tok in sent] for sent in toks]
+            return [[self.word_to_id[tok] if tok in self.word_to_id.keys() else self.word_to_id[UNKNOWN] for tok in sent] for sent in toks]
 
     def to_idxs_tensor(self, input_to_embed, isDialogueVocab=False, device=None):
         """

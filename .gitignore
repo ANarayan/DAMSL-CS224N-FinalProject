@@ -3,4 +3,5 @@ __pycache__/utils.cpython-37.pyc
 model/__pycache__/*
 formatted_data/*
 data/*
+experiments/*
 

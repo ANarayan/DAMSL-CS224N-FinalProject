@@ -38,3 +38,12 @@ def pad(idxs_to_pad, pad_idx):
         idxs.extend([pad_idx] * (max_len - len(idxs)))
     return idxs_to_pad
 
+
+def save_checkpoint(state, checkpoint):
+    filepath = os.path.join(checkpoint, 'last.pth.tar')
+    if not os.path.exists(checkpoint):
+        print("checkpoint directory doesnt exist. Making directory {}".format(checkpoint))
+        os.mkdir(checkpoint)
+    else:
+        print("Checkpoint directory exists")
+    torch.save(state, filepath)
