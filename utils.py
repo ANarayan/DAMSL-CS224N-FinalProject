@@ -3,6 +3,7 @@ import json
 import torch
 import logging
 import shutil
+import pickle
 
 def read_json_file(file_path):
     with open(file_path) as file:
@@ -38,12 +39,18 @@ def pad(idxs_to_pad, pad_idx):
         idxs.extend([pad_idx] * (max_len - len(idxs)))
     return idxs_to_pad
 
+def save_dict_to_pkl(d, path):
+    out_file = open(path, 'wb')
+    pickle.dump(d, out_file)
 
-def save_checkpoint(state, checkpoint):
-    filepath = os.path.join(checkpoint, 'last.pth.tar')
+def save_checkpoint(state, checkpoint, is_best):
+    filepath = os.path.join(checkpoint, 'last.pth.tar') 
     if not os.path.exists(checkpoint):
         print("checkpoint directory doesnt exist. Making directory {}".format(checkpoint))
         os.mkdir(checkpoint)
     else:
         print("Checkpoint directory exists")
     torch.save(state, filepath)
+
+    if is_best:
+        shutil.copyfile(filepath, os.path.join(checkpoint, 'best.pth.tar'))

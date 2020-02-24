@@ -200,7 +200,11 @@ class ClassificationNet(nn.Module):
         output =  self.slot_projection(x)
         return output
 
-
+def goal_accuracy_metric(output, labels):
+    sigmoid_output = F.sigmoid(output)
+    predicted_ouputs = torch.round(sigmoid_output)
+    accuracy = (predicted_ouputs == labels).float().sum()/(labels.size(0) * labels.size(1))
+    return accuracy
 
         
 

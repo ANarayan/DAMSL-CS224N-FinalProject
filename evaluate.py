@@ -9,11 +9,13 @@ import torch
 import utils
 
 from model.DSTModel import DST
+from model.DSTModel import goal_accuracy_metric
 from model.data_loader import DialoguesDataset
 from torch.utils.data import Dataset, DataLoader
 from tqdm import trange
 import torch.nn.functional as F
 import torch.nn as nn
+
 
 
 def evaluate(model, evaluation_data, model_dir, dataset_params, device):
@@ -32,6 +34,9 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
 
     num_of_steps = evaluation_data.__len__() // batch_size
 
+    # summary for current eval loop
+    summ = []
+
     t = trange(num_of_steps)
 
     for i in t:
@@ -49,13 +54,32 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, cand_label)
 
+            # generate summary statistics
+            accuracy = goal_accuracy_metric(output, cand_label).item()
+            total_loss = loss.sum().item()
+            avg_loss_batch = total_loss/(batch_size * num_of_slots)
+
+            summary_batch = {'goal_accuracy' : accuracy,
+                            'total_loss' : total_loss,
+                            'avg_loss' : avg_loss_batch
+                    }
+
+            summ.append(summary_batch)
+            
             # add to total loss
-            total_loss_eval += loss.sum().item()
+            total_loss_eval += total_loss
 
         # no more batches left
         except StopIteration:
             break
 
         avg_loss_eval = total_loss_eval/((i+1) * batch_size * num_of_slots)
-    logging.info("Average Eval loss: {}".format(avg_loss_eval))        
+
+    
+    metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
+    metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
+    logging.info("- Eval metrics : " + metrics_string)
+    logging.info("Average Evaluation Loss: {}".format(avg_loss_eval))     
+
+    return metrics_mean   
 
