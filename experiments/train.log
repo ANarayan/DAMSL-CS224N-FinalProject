@@ -625,3 +625,8 @@
 2020-02-21 20:54:39,805:INFO: -done
 2020-02-21 20:54:39,844:INFO: Starting training for 5 epoch(s)
 2020-02-21 20:54:39,844:INFO: Epoch 1/5
+2020-02-26 11:02:45,954:INFO: Loading the datasets...
+2020-02-26 11:03:55,586:INFO: Loading the datasets...
+2020-02-26 11:03:56,024:INFO: -done
+2020-02-26 11:03:56,097:INFO: Starting training for 5 epoch(s)
+2020-02-26 11:03:56,099:INFO: Epoch 1/5
