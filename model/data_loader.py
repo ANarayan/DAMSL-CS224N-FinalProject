@@ -18,8 +18,8 @@ class DialoguesDataset(Dataset):
             data_file (string): Path to pickle file with turn+candidate pairs.
         """
         dialogue_data = open(data_file, 'rb') 
-        self.turn_cand_dps= pickle.load(dialogue_data)
-    
+        self.turn_cand_dps= pickle.load(dialogue_data)[0:284800] # need to make sure it divisible by all batch sizes
+     
     def __len__(self):
         return len(self.turn_cand_dps)
 

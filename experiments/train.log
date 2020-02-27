@@ -10973,3 +10973,423 @@
 2020-02-24 12:58:14,228:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 0.013 ; avg_loss: 0.000
 2020-02-24 12:58:14,228:INFO: Average Evaluation Loss: 0.00018779209681919643
 2020-02-24 12:58:14,383:INFO: - Found new best accuracy
+2020-02-24 13:55:41,116:INFO: Loading the datasets...
+2020-02-24 13:55:41,118:INFO: -done
+2020-02-24 13:55:41,196:INFO: Starting training for 10 epoch(s)
+2020-02-24 13:55:41,197:INFO: Epoch 1/10
+2020-02-24 13:55:41,462:INFO: - Train metrics : goal_accuracy: 0.486 ; total_loss: 48.824 ; avg_loss: 0.697
+2020-02-24 13:55:41,462:INFO: Average Training loss: 0.6974861689976284
+2020-02-24 13:55:41,475:INFO: - Eval metrics : goal_accuracy: 0.914 ; total_loss: 42.323 ; avg_loss: 0.605
+2020-02-24 13:55:41,475:INFO: Average Evaluation Loss: 0.6046083177839007
+2020-02-24 13:55:41,714:INFO: - Found new best accuracy
+2020-02-24 13:55:41,715:INFO: Epoch 2/10
+2020-02-24 13:55:41,890:INFO: - Train metrics : goal_accuracy: 0.914 ; total_loss: 42.323 ; avg_loss: 0.605
+2020-02-24 13:55:41,890:INFO: Average Training loss: 0.6046083177839007
+2020-02-24 13:55:41,901:INFO: - Eval metrics : goal_accuracy: 0.943 ; total_loss: 35.735 ; avg_loss: 0.510
+2020-02-24 13:55:41,901:INFO: Average Evaluation Loss: 0.5104953220912388
+2020-02-24 13:55:42,297:INFO: - Found new best accuracy
+2020-02-24 13:55:42,298:INFO: Epoch 3/10
+2020-02-24 13:55:42,575:INFO: - Train metrics : goal_accuracy: 0.943 ; total_loss: 35.735 ; avg_loss: 0.510
+2020-02-24 13:55:42,575:INFO: Average Training loss: 0.5104953220912388
+2020-02-24 13:55:42,586:INFO: - Eval metrics : goal_accuracy: 0.971 ; total_loss: 27.004 ; avg_loss: 0.386
+2020-02-24 13:55:42,586:INFO: Average Evaluation Loss: 0.3857785361153739
+2020-02-24 13:55:42,919:INFO: - Found new best accuracy
+2020-02-24 13:55:42,920:INFO: Epoch 4/10
+2020-02-24 13:55:43,107:INFO: - Train metrics : goal_accuracy: 0.971 ; total_loss: 27.004 ; avg_loss: 0.386
+2020-02-24 13:55:43,107:INFO: Average Training loss: 0.3857785361153739
+2020-02-24 13:55:43,121:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 17.361 ; avg_loss: 0.248
+2020-02-24 13:55:43,122:INFO: Average Evaluation Loss: 0.24801246098109653
+2020-02-24 13:55:43,500:INFO: - Found new best accuracy
+2020-02-24 13:55:43,501:INFO: Epoch 5/10
+2020-02-24 13:55:43,743:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 17.361 ; avg_loss: 0.248
+2020-02-24 13:55:43,743:INFO: Average Training loss: 0.24801246098109653
+2020-02-24 13:55:43,756:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 9.172 ; avg_loss: 0.131
+2020-02-24 13:55:43,756:INFO: Average Evaluation Loss: 0.13103087288992746
+2020-02-24 13:55:43,972:INFO: - Found new best accuracy
+2020-02-24 13:55:43,973:INFO: Epoch 6/10
+2020-02-24 13:55:44,242:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 9.172 ; avg_loss: 0.131
+2020-02-24 13:55:44,243:INFO: Average Training loss: 0.13103087288992746
+2020-02-24 13:55:44,257:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 3.934 ; avg_loss: 0.056
+2020-02-24 13:55:44,258:INFO: Average Evaluation Loss: 0.056200991358075825
+2020-02-24 13:55:44,469:INFO: - Found new best accuracy
+2020-02-24 13:55:44,470:INFO: Epoch 7/10
+2020-02-24 13:55:44,630:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 3.934 ; avg_loss: 0.056
+2020-02-24 13:55:44,631:INFO: Average Training loss: 0.056200991358075825
+2020-02-24 13:55:44,642:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 1.376 ; avg_loss: 0.020
+2020-02-24 13:55:44,642:INFO: Average Evaluation Loss: 0.019655939510890414
+2020-02-24 13:55:45,113:INFO: - Found new best accuracy
+2020-02-24 13:55:45,115:INFO: Epoch 8/10
+2020-02-24 13:55:45,399:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 1.376 ; avg_loss: 0.020
+2020-02-24 13:55:45,399:INFO: Average Training loss: 0.019655939510890414
+2020-02-24 13:55:45,413:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 0.411 ; avg_loss: 0.006
+2020-02-24 13:55:45,413:INFO: Average Evaluation Loss: 0.0058783667428152905
+2020-02-24 13:55:46,093:INFO: - Found new best accuracy
+2020-02-24 13:55:46,094:INFO: Epoch 9/10
+2020-02-24 13:55:46,387:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 0.411 ; avg_loss: 0.006
+2020-02-24 13:55:46,387:INFO: Average Training loss: 0.0058783667428152905
+2020-02-24 13:55:46,438:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 0.114 ; avg_loss: 0.002
+2020-02-24 13:55:46,439:INFO: Average Evaluation Loss: 0.0016310419355119977
+2020-02-24 13:55:46,762:INFO: - Found new best accuracy
+2020-02-24 13:55:46,762:INFO: Epoch 10/10
+2020-02-24 13:55:47,004:INFO: - Train metrics : goal_accuracy: 1.000 ; total_loss: 0.114 ; avg_loss: 0.002
+2020-02-24 13:55:47,004:INFO: Average Training loss: 0.0016310419355119977
+2020-02-24 13:55:47,019:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 0.032 ; avg_loss: 0.000
+2020-02-24 13:55:47,019:INFO: Average Evaluation Loss: 0.0004507814134870257
+2020-02-24 13:55:47,269:INFO: - Found new best accuracy
+2020-02-24 17:17:40,284:INFO: Loading the datasets...
+2020-02-24 17:17:40,286:INFO: -done
+2020-02-24 17:17:40,366:INFO: Starting training for 10 epoch(s)
+2020-02-24 17:17:40,366:INFO: Epoch 1/10
+2020-02-24 17:20:35,961:INFO: Loading the datasets...
+2020-02-24 17:20:35,961:INFO: -done
+2020-02-24 17:20:36,038:INFO: Starting training for 10 epoch(s)
+2020-02-24 17:20:36,038:INFO: Epoch 1/10
+2020-02-24 17:21:38,205:INFO: Loading the datasets...
+2020-02-24 17:21:38,206:INFO: -done
+2020-02-24 17:21:38,287:INFO: Starting training for 10 epoch(s)
+2020-02-24 17:21:38,287:INFO: Epoch 1/10
+2020-02-24 17:21:38,543:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 49.100
+2020-02-24 17:21:38,544:INFO: Average Training loss: 49.099815368652344
+2020-02-24 17:21:38,558:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 42.610
+2020-02-24 17:21:38,558:INFO: Average Evaluation Loss: 42.60975646972656
+2020-02-24 17:21:38,677:INFO: Epoch 2/10
+2020-02-24 17:21:38,895:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 42.610
+2020-02-24 17:21:38,895:INFO: Average Training loss: 42.60975646972656
+2020-02-24 17:21:38,909:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 36.106
+2020-02-24 17:21:38,909:INFO: Average Evaluation Loss: 36.1064453125
+2020-02-24 17:21:38,984:INFO: Epoch 3/10
+2020-02-24 17:21:39,180:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 36.106
+2020-02-24 17:21:39,181:INFO: Average Training loss: 36.1064453125
+2020-02-24 17:21:39,193:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 27.574
+2020-02-24 17:21:39,193:INFO: Average Evaluation Loss: 27.574220657348633
+2020-02-24 17:21:39,300:INFO: Epoch 4/10
+2020-02-24 17:21:39,517:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 27.574
+2020-02-24 17:21:39,517:INFO: Average Training loss: 27.574220657348633
+2020-02-24 17:21:39,530:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 18.050
+2020-02-24 17:21:39,530:INFO: Average Evaluation Loss: 18.049617767333984
+2020-02-24 17:21:39,612:INFO: Epoch 5/10
+2020-02-24 17:21:39,810:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 18.050
+2020-02-24 17:21:39,810:INFO: Average Training loss: 18.049617767333984
+2020-02-24 17:21:39,823:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 9.629
+2020-02-24 17:21:39,824:INFO: Average Evaluation Loss: 9.629393577575684
+2020-02-24 17:21:39,890:INFO: Epoch 6/10
+2020-02-24 17:21:40,074:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 9.629
+2020-02-24 17:21:40,074:INFO: Average Training loss: 9.629393577575684
+2020-02-24 17:21:40,087:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 4.055
+2020-02-24 17:21:40,087:INFO: Average Evaluation Loss: 4.054704189300537
+2020-02-24 17:21:40,169:INFO: Epoch 7/10
+2020-02-24 17:21:40,345:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 4.055
+2020-02-24 17:21:40,345:INFO: Average Training loss: 4.054704189300537
+2020-02-24 17:21:40,359:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 1.354
+2020-02-24 17:21:40,359:INFO: Average Evaluation Loss: 1.3535780906677246
+2020-02-24 17:21:40,427:INFO: Epoch 8/10
+2020-02-24 17:21:40,617:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 1.354
+2020-02-24 17:21:40,617:INFO: Average Training loss: 1.3535780906677246
+2020-02-24 17:21:40,633:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.380
+2020-02-24 17:21:40,633:INFO: Average Evaluation Loss: 0.3798251152038574
+2020-02-24 17:21:40,708:INFO: Epoch 9/10
+2020-02-24 17:21:40,920:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 0.380
+2020-02-24 17:21:40,920:INFO: Average Training loss: 0.3798251152038574
+2020-02-24 17:21:40,933:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.098
+2020-02-24 17:21:40,933:INFO: Average Evaluation Loss: 0.09783697128295898
+2020-02-24 17:21:41,003:INFO: Epoch 10/10
+2020-02-24 17:21:41,182:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 0.098
+2020-02-24 17:21:41,183:INFO: Average Training loss: 0.09783697128295898
+2020-02-24 17:21:41,194:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.025
+2020-02-24 17:21:41,195:INFO: Average Evaluation Loss: 0.024970054626464844
+2020-02-24 17:22:21,068:INFO: Loading the datasets...
+2020-02-24 17:22:21,069:INFO: -done
+2020-02-24 17:22:21,167:INFO: Starting training for 10 epoch(s)
+2020-02-24 17:22:21,167:INFO: Epoch 1/10
+2020-02-24 17:22:21,426:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 49.886
+2020-02-24 17:22:21,426:INFO: Average Training loss: 49.88616943359375
+2020-02-24 17:22:21,438:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 43.058
+2020-02-24 17:22:21,438:INFO: Average Evaluation Loss: 43.0580940246582
+2020-02-24 17:22:21,517:INFO: Epoch 2/10
+2020-02-24 17:22:21,714:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 43.058
+2020-02-24 17:22:21,714:INFO: Average Training loss: 43.0580940246582
+2020-02-24 17:22:21,727:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 36.820
+2020-02-24 17:22:21,727:INFO: Average Evaluation Loss: 36.82033920288086
+2020-02-24 17:22:21,803:INFO: Epoch 3/10
+2020-02-24 17:22:22,009:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 36.820
+2020-02-24 17:22:22,009:INFO: Average Training loss: 36.82033920288086
+2020-02-24 17:22:22,022:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 28.503
+2020-02-24 17:22:22,022:INFO: Average Evaluation Loss: 28.50322914123535
+2020-02-24 17:22:22,096:INFO: Epoch 4/10
+2020-02-24 17:22:22,286:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 28.503
+2020-02-24 17:22:22,286:INFO: Average Training loss: 28.50322914123535
+2020-02-24 17:22:22,299:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 19.052
+2020-02-24 17:22:22,299:INFO: Average Evaluation Loss: 19.051651000976562
+2020-02-24 17:22:22,386:INFO: Epoch 5/10
+2020-02-24 17:22:22,575:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 19.052
+2020-02-24 17:22:22,575:INFO: Average Training loss: 19.051651000976562
+2020-02-24 17:22:22,588:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 10.546
+2020-02-24 17:22:22,588:INFO: Average Evaluation Loss: 10.546030044555664
+2020-02-24 17:22:22,666:INFO: Epoch 6/10
+2020-02-24 17:22:22,865:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 10.546
+2020-02-24 17:22:22,865:INFO: Average Training loss: 10.546030044555664
+2020-02-24 17:22:22,878:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 4.685
+2020-02-24 17:22:22,878:INFO: Average Evaluation Loss: 4.68525505065918
+2020-02-24 17:22:22,948:INFO: Epoch 7/10
+2020-02-24 17:22:23,128:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 4.685
+2020-02-24 17:22:23,128:INFO: Average Training loss: 4.68525505065918
+2020-02-24 17:22:23,140:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 1.673
+2020-02-24 17:22:23,140:INFO: Average Evaluation Loss: 1.673377513885498
+2020-02-24 17:22:23,209:INFO: Epoch 8/10
+2020-02-24 17:22:23,385:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 1.673
+2020-02-24 17:22:23,385:INFO: Average Training loss: 1.673377513885498
+2020-02-24 17:22:23,397:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.506
+2020-02-24 17:22:23,398:INFO: Average Evaluation Loss: 0.5057985782623291
+2020-02-24 17:22:23,467:INFO: Epoch 9/10
+2020-02-24 17:22:23,655:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 0.506
+2020-02-24 17:22:23,656:INFO: Average Training loss: 0.5057985782623291
+2020-02-24 17:22:23,669:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.140
+2020-02-24 17:22:23,670:INFO: Average Evaluation Loss: 0.14026737213134766
+2020-02-24 17:22:23,745:INFO: Epoch 10/10
+2020-02-24 17:22:23,940:INFO: - Train metrics : goal_accuracy: 00nan ; total_batch_loss: 0.140
+2020-02-24 17:22:23,940:INFO: Average Training loss: 0.14026737213134766
+2020-02-24 17:22:23,952:INFO: - Eval metrics : goal_accuracy: 00nan ; total_batch_loss: 0.038
+2020-02-24 17:22:23,953:INFO: Average Evaluation Loss: 0.038252830505371094
+2020-02-25 23:37:47,065:INFO: Loading the datasets...
+2020-02-25 23:37:47,073:INFO: -done
+2020-02-25 23:37:47,152:INFO: Starting training for 10 epoch(s)
+2020-02-25 23:37:47,152:INFO: Epoch 1/10
+2020-02-25 23:43:50,813:INFO: Loading the datasets...
+2020-02-25 23:43:50,814:INFO: -done
+2020-02-25 23:43:50,922:INFO: Starting training for 10 epoch(s)
+2020-02-25 23:43:50,923:INFO: Epoch 1/10
+2020-02-25 23:43:51,231:INFO: - Train metrics : total_batch_loss: 47.675
+2020-02-25 23:43:51,231:INFO: Average Training loss: 47.6754150390625
+2020-02-25 23:43:51,232:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:44:04,115:INFO: Loading the datasets...
+2020-02-25 23:44:04,117:INFO: -done
+2020-02-25 23:44:04,206:INFO: Starting training for 10 epoch(s)
+2020-02-25 23:44:04,206:INFO: Epoch 1/10
+2020-02-25 23:44:04,480:INFO: - Train metrics : total_batch_loss: 48.391
+2020-02-25 23:44:04,481:INFO: Average Training loss: 48.39085006713867
+2020-02-25 23:44:04,481:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:44:04,495:INFO: - Eval metrics : total_batch_loss: 41.155
+2020-02-25 23:44:04,495:INFO: Average Evaluation Loss: 41.154720306396484
+2020-02-25 23:44:04,495:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:44:59,839:INFO: Loading the datasets...
+2020-02-25 23:44:59,840:INFO: -done
+2020-02-25 23:44:59,915:INFO: Starting training for 10 epoch(s)
+2020-02-25 23:44:59,915:INFO: Epoch 1/10
+2020-02-25 23:45:00,158:INFO: - Train metrics : total_batch_loss: 48.618
+2020-02-25 23:45:00,158:INFO: Average Training loss: 48.61793518066406
+2020-02-25 23:45:00,158:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:00,171:INFO: - Eval metrics : total_batch_loss: 41.788
+2020-02-25 23:45:00,171:INFO: Average Evaluation Loss: 41.7878532409668
+2020-02-25 23:45:00,171:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:00,804:INFO: - Found new best accuracy
+2020-02-25 23:45:00,805:INFO: Epoch 2/10
+2020-02-25 23:45:00,998:INFO: - Train metrics : total_batch_loss: 41.788
+2020-02-25 23:45:00,999:INFO: Average Training loss: 41.78785705566406
+2020-02-25 23:45:01,000:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:01,013:INFO: - Eval metrics : total_batch_loss: 34.905
+2020-02-25 23:45:01,013:INFO: Average Evaluation Loss: 34.904598236083984
+2020-02-25 23:45:01,013:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:01,360:INFO: Epoch 3/10
+2020-02-25 23:45:01,615:INFO: - Train metrics : total_batch_loss: 34.905
+2020-02-25 23:45:01,615:INFO: Average Training loss: 34.90459060668945
+2020-02-25 23:45:01,616:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:01,630:INFO: - Eval metrics : total_batch_loss: 26.186
+2020-02-25 23:45:01,630:INFO: Average Evaluation Loss: 26.186195373535156
+2020-02-25 23:45:01,630:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:01,948:INFO: Epoch 4/10
+2020-02-25 23:45:02,146:INFO: - Train metrics : total_batch_loss: 26.186
+2020-02-25 23:45:02,147:INFO: Average Training loss: 26.18619155883789
+2020-02-25 23:45:02,147:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:02,160:INFO: - Eval metrics : total_batch_loss: 16.838
+2020-02-25 23:45:02,160:INFO: Average Evaluation Loss: 16.83843231201172
+2020-02-25 23:45:02,160:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:02,469:INFO: Epoch 5/10
+2020-02-25 23:45:02,639:INFO: - Train metrics : total_batch_loss: 16.838
+2020-02-25 23:45:02,639:INFO: Average Training loss: 16.838436126708984
+2020-02-25 23:45:02,639:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:02,651:INFO: - Eval metrics : total_batch_loss: 9.184
+2020-02-25 23:45:02,651:INFO: Average Evaluation Loss: 9.184005737304688
+2020-02-25 23:45:02,651:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:02,983:INFO: Epoch 6/10
+2020-02-25 23:45:03,158:INFO: - Train metrics : total_batch_loss: 9.184
+2020-02-25 23:45:03,158:INFO: Average Training loss: 9.184005737304688
+2020-02-25 23:45:03,159:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:03,172:INFO: - Eval metrics : total_batch_loss: 4.348
+2020-02-25 23:45:03,172:INFO: Average Evaluation Loss: 4.348271369934082
+2020-02-25 23:45:03,172:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:03,475:INFO: Epoch 7/10
+2020-02-25 23:45:03,642:INFO: - Train metrics : total_batch_loss: 4.348
+2020-02-25 23:45:03,642:INFO: Average Training loss: 4.348270416259766
+2020-02-25 23:45:03,642:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:03,653:INFO: - Eval metrics : total_batch_loss: 1.714
+2020-02-25 23:45:03,653:INFO: Average Evaluation Loss: 1.7141573429107666
+2020-02-25 23:45:03,653:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:03,927:INFO: Epoch 8/10
+2020-02-25 23:45:04,104:INFO: - Train metrics : total_batch_loss: 1.714
+2020-02-25 23:45:04,105:INFO: Average Training loss: 1.7141574621200562
+2020-02-25 23:45:04,105:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:04,116:INFO: - Eval metrics : total_batch_loss: 0.532
+2020-02-25 23:45:04,116:INFO: Average Evaluation Loss: 0.5323486328125
+2020-02-25 23:45:04,116:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:04,410:INFO: Epoch 9/10
+2020-02-25 23:45:04,568:INFO: - Train metrics : total_batch_loss: 0.532
+2020-02-25 23:45:04,568:INFO: Average Training loss: 0.5323486328125
+2020-02-25 23:45:04,568:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:04,579:INFO: - Eval metrics : total_batch_loss: 0.142
+2020-02-25 23:45:04,580:INFO: Average Evaluation Loss: 0.14186835289001465
+2020-02-25 23:45:04,580:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-25 23:45:04,714:INFO: Epoch 10/10
+2020-02-25 23:45:04,871:INFO: - Train metrics : total_batch_loss: 0.142
+2020-02-25 23:45:04,872:INFO: Average Training loss: 0.14186835289001465
+2020-02-25 23:45:04,872:INFO: Train Precision: None; Recall: None; F1: None
+2020-02-25 23:45:04,883:INFO: - Eval metrics : total_batch_loss: 0.037
+2020-02-25 23:45:04,883:INFO: Average Evaluation Loss: 0.037494659423828125
+2020-02-25 23:45:04,883:INFO: Eval Precision: None; Recall: None; F1: None
+2020-02-26 17:57:41,942:INFO: Loading the datasets...
+2020-02-26 17:57:41,944:INFO: -done
+2020-02-26 17:57:42,037:INFO: Starting training for 10 epoch(s)
+2020-02-26 17:57:42,038:INFO: Epoch 1/10
+2020-02-26 17:59:02,418:INFO: Loading the datasets...
+2020-02-26 17:59:02,418:INFO: -done
+2020-02-26 17:59:02,495:INFO: Starting training for 10 epoch(s)
+2020-02-26 17:59:02,496:INFO: Epoch 1/10
+2020-02-26 18:00:08,358:INFO: Loading the datasets...
+2020-02-26 18:00:08,358:INFO: -done
+2020-02-26 18:00:08,461:INFO: Starting training for 10 epoch(s)
+2020-02-26 18:00:08,461:INFO: Epoch 1/10
+2020-02-26 18:00:08,759:INFO: - Train metrics : total_batch_loss: 48.890
+2020-02-26 18:00:08,759:INFO: Average Training loss: 48.889892578125
+2020-02-26 18:00:08,759:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:08,759:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:08,759:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:08,774:INFO: - Eval metrics : batch_loss: 41.499
+2020-02-26 18:00:08,774:INFO: Average Evaluation Loss: 41.49882888793945
+2020-02-26 18:00:08,774:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:08,774:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:08,774:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:22,225:INFO: Loading the datasets...
+2020-02-26 18:00:22,226:INFO: -done
+2020-02-26 18:00:22,309:INFO: Starting training for 10 epoch(s)
+2020-02-26 18:00:22,309:INFO: Epoch 1/10
+2020-02-26 18:00:22,574:INFO: - Train metrics : total_batch_loss: 48.866
+2020-02-26 18:00:22,574:INFO: Average Training loss: 48.865970611572266
+2020-02-26 18:00:22,574:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:22,574:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:22,574:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:22,588:INFO: - Eval metrics : total_batch_loss: 42.240
+2020-02-26 18:00:22,588:INFO: Average Evaluation Loss: 42.24049758911133
+2020-02-26 18:00:22,589:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:22,589:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:22,589:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:23,344:INFO: - Found new best accuracy
+2020-02-26 18:00:23,345:INFO: Epoch 2/10
+2020-02-26 18:00:23,543:INFO: - Train metrics : total_batch_loss: 42.241
+2020-02-26 18:00:23,544:INFO: Average Training loss: 42.24050521850586
+2020-02-26 18:00:23,544:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:23,544:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:23,544:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:23,557:INFO: - Eval metrics : total_batch_loss: 35.571
+2020-02-26 18:00:23,558:INFO: Average Evaluation Loss: 35.571468353271484
+2020-02-26 18:00:23,558:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:23,558:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:23,558:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:23,793:INFO: Epoch 3/10
+2020-02-26 18:00:23,993:INFO: - Train metrics : total_batch_loss: 35.571
+2020-02-26 18:00:23,993:INFO: Average Training loss: 35.57146453857422
+2020-02-26 18:00:23,993:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:23,993:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:23,993:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:24,012:INFO: - Eval metrics : total_batch_loss: 26.929
+2020-02-26 18:00:24,012:INFO: Average Evaluation Loss: 26.92939567565918
+2020-02-26 18:00:24,012:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:24,012:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:24,013:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:24,257:INFO: Epoch 4/10
+2020-02-26 18:00:24,498:INFO: - Train metrics : total_batch_loss: 26.929
+2020-02-26 18:00:24,498:INFO: Average Training loss: 26.92939567565918
+2020-02-26 18:00:24,498:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:24,499:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:24,499:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:24,522:INFO: - Eval metrics : total_batch_loss: 17.364
+2020-02-26 18:00:24,522:INFO: Average Evaluation Loss: 17.36406135559082
+2020-02-26 18:00:24,522:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:24,522:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:24,522:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:24,854:INFO: Epoch 5/10
+2020-02-26 18:00:25,067:INFO: - Train metrics : total_batch_loss: 17.364
+2020-02-26 18:00:25,067:INFO: Average Training loss: 17.364059448242188
+2020-02-26 18:00:25,067:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:25,067:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:25,067:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:25,100:INFO: - Eval metrics : total_batch_loss: 9.181
+2020-02-26 18:00:25,100:INFO: Average Evaluation Loss: 9.181407928466797
+2020-02-26 18:00:25,100:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:25,101:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:25,101:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:25,503:INFO: Epoch 6/10
+2020-02-26 18:00:25,712:INFO: - Train metrics : total_batch_loss: 9.181
+2020-02-26 18:00:25,712:INFO: Average Training loss: 9.181407928466797
+2020-02-26 18:00:25,712:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:25,712:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:25,713:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:25,733:INFO: - Eval metrics : total_batch_loss: 3.855
+2020-02-26 18:00:25,733:INFO: Average Evaluation Loss: 3.855090379714966
+2020-02-26 18:00:25,734:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:25,734:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:25,734:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:26,136:INFO: Epoch 7/10
+2020-02-26 18:00:26,357:INFO: - Train metrics : total_batch_loss: 3.855
+2020-02-26 18:00:26,357:INFO: Average Training loss: 3.855090618133545
+2020-02-26 18:00:26,357:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:26,358:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:26,358:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:26,373:INFO: - Eval metrics : total_batch_loss: 1.269
+2020-02-26 18:00:26,373:INFO: Average Evaluation Loss: 1.2688277959823608
+2020-02-26 18:00:26,373:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:26,373:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:26,374:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:26,639:INFO: Epoch 8/10
+2020-02-26 18:00:26,839:INFO: - Train metrics : total_batch_loss: 1.269
+2020-02-26 18:00:26,839:INFO: Average Training loss: 1.2688277959823608
+2020-02-26 18:00:26,839:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:26,839:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:26,839:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:26,853:INFO: - Eval metrics : total_batch_loss: 0.343
+2020-02-26 18:00:26,853:INFO: Average Evaluation Loss: 0.34293150901794434
+2020-02-26 18:00:26,853:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:26,853:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:26,853:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:27,147:INFO: Epoch 9/10
+2020-02-26 18:00:27,350:INFO: - Train metrics : total_batch_loss: 0.343
+2020-02-26 18:00:27,351:INFO: Average Training loss: 0.34293150901794434
+2020-02-26 18:00:27,351:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:27,351:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:27,351:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:27,365:INFO: - Eval metrics : total_batch_loss: 0.085
+2020-02-26 18:00:27,365:INFO: Average Evaluation Loss: 0.0850062370300293
+2020-02-26 18:00:27,365:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:27,365:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:27,365:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:27,526:INFO: Epoch 10/10
+2020-02-26 18:00:27,697:INFO: - Train metrics : total_batch_loss: 0.085
+2020-02-26 18:00:27,697:INFO: Average Training loss: 0.0850062370300293
+2020-02-26 18:00:27,697:INFO: Train Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:27,697:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:27,697:INFO: Average goal accuracy: 0.0
+2020-02-26 18:00:27,710:INFO: - Eval metrics : total_batch_loss: 0.021
+2020-02-26 18:00:27,710:INFO: Average Evaluation Loss: 0.021027088165283203
+2020-02-26 18:00:27,710:INFO: Eval Precision: 0; Recall: 0; F1: 0
+2020-02-26 18:00:27,710:INFO: Joint goal accuracy: 1.0
+2020-02-26 18:00:27,710:INFO: Average goal accuracy: 0.0
+2020-02-26 18:37:52,517:INFO: Loading the datasets...
+2020-02-26 18:37:53,898:INFO: -done
+2020-02-26 18:37:53,974:INFO: Starting training for 10 epoch(s)
+2020-02-26 18:37:53,974:INFO: Epoch 1/10
+2020-02-26 18:39:48,048:INFO: Loading the datasets...
+2020-02-26 18:39:49,331:INFO: -done
+2020-02-26 18:39:49,408:INFO: Starting training for 10 epoch(s)
+2020-02-26 18:39:49,409:INFO: Epoch 1/10
+2020-02-26 18:40:17,781:INFO: Loading the datasets...
+2020-02-26 18:40:19,167:INFO: -done
+2020-02-26 18:40:19,244:INFO: Starting training for 10 epoch(s)
+2020-02-26 18:40:19,244:INFO: Epoch 1/10
