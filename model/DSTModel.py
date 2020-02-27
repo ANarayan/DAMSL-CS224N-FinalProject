@@ -70,7 +70,7 @@ class DST(nn.Module):
         return context
 
 
-    def forward(self, turn_context, candidate):
+    def feed_forward(self, turn_context, candidate):
         """ Forward pass for a turn/candidate pair
             @param turn_context (Tensor): vector which is a concatenation of encoded utterance
                                     dialogue history, and system actions: # Tensor: (batch_size, 1, context_encoding)
@@ -84,7 +84,13 @@ class DST(nn.Module):
         #print(feed_forward_input.size())
         output = self.classification_net(feed_forward_input)
         return output
-         
+
+    def forward(self, turn_and_cand):
+        context_vectors = torch.stack([self.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
+        candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
+        output = self.feed_forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
+        return output.squeeze(dim=1)
+
 class SentenceBiLSTM(nn.Module): 
     """ BiLSTM used to encode individual user utterances 
     """

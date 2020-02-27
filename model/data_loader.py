@@ -67,7 +67,8 @@ class DialoguesDataset(Dataset):
 
             yield batch_data, batch_labels
 
-
+#TODO: if time, write a batch loader for tasks/domains, to make maml extensible
+# to many domains by not having to load all their data into memory simultaneously
 
 
 
