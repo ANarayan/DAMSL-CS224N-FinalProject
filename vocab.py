@@ -94,7 +94,7 @@ class Vocab():
         --pth: Path object
         --ftype: one of {'json', 'pkl'}
         --usr: whether to get usr or system transcript
-        
+        l
         """
         i = len(self.word_to_id)
         if ftype == 'pkl':
