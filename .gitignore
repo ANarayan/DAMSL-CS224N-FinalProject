@@ -4,4 +4,5 @@ model/__pycache__/*
 formatted_data/*
 data/*
 experiments/*
+runs/*
 

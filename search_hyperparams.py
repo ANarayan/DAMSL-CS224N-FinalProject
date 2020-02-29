@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--output_dir', default='experiments/', help='Dirctory which contains params.json and experiment outputs')
 parser.add_argument('--data_dir', default='data/', help='Directory which contains the dataset')
+parser.add_argument('--domain', help='domain name of dataset being tuned')
 
 def run_training_job(output_dir, data_dir, job_name, param_config):
     """Launch training of the model with a set of hyperparameters in output_dir/job_name
@@ -42,39 +43,50 @@ def run_training_job(output_dir, data_dir, job_name, param_config):
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    num_of_trials =  60 
+    num_of_trials =  30
+
+    SENTENCE_HIDDEN_DIM = 256
+    HIERARCHIAL_HIDDEN_DIM = 512
+    DA_HIDDEN_DIM = 64
+    FF_HIDDDEN_DIM = 256
+
     
     param_grid = { 
-                'learning_rate' : None,
-                'sentence_hidden_dim' : [64, 128, 256],
-                'hierarchial_hidden_dim' : [128, 256, 512], # 'hierarchial_hidden_dim'
-                'da_hidden_dim' : [16, 32, 64],  # 'da_hidden_dim'
-                'ff_hidden_dim' : [64, 128, 256],
+                'learning_rate' : [.0001, .001, .01, .1],
+                'model_prop' : [1, 1/2, 1/4, 1/8, 1/16, 1/32],
                 'batch_size' : [4, 8, 16, 32, 64, 128],
-                'ff_dropout_prob' : [0, 0.3, 0.5, 0.8],
+                'ff_dropout_prob' : [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
                 'random_seed' : None
             }
+    
+    # create best_config.json file to keep track of which parameters lead to best results
+    best_dict = {'experiment_name' : None, 'best_val_loss' : 1e1000}
+    utils.write_json_file(best_dict, os.path.join(args.output_dir, 'best_config.json'))
 
     #param_combs = list(ParameterGrid(param_grid))
     json_path = os.path.join(args.output_dir, 'params.json')
 
     for t in range(num_of_trials):
+        model_scale = random.choice(param_grid['model_prop'])
         param_config = {
-                'learning_rate' : 10 ** np.random.uniform(-5,1),
-                'sentence_hidden_dim' : random.choice(param_grid['sentence_hidden_dim']),
-                'hierarchial_hidden_dim' : random.choice(param_grid['hierarchial_hidden_dim']), # 'hierarchial_hidden_dim'
-                'da_hidden_dim' : random.choice(param_grid['da_hidden_dim']),  # 'da_hidden_dim'
-                'ff_hidden_dim' : random.choice(param_grid['ff_hidden_dim']),
+                'learning_rate' : random.choice(param_grid['learning_rate']),
+                'sentence_hidden_dim' : int(model_scale * SENTENCE_HIDDEN_DIM),
+                'hierarchial_hidden_dim' : int(model_scale * HIERARCHIAL_HIDDEN_DIM), # 'hierarchial_hidden_dim'
+                'da_hidden_dim' : int(model_scale * DA_HIDDEN_DIM),  # 'da_hidden_dim'
+                'ff_hidden_dim' : int(model_scale * FF_HIDDDEN_DIM) ,
                 'batch_size' :  random.choice(param_grid['batch_size']),
-                'ff_dropout_prob' : np.random.uniform(0,1),
-                'random_seed' : int(np.random.uniform(0,100))
+                'ff_dropout_prob' : random.choice(param_grid['ff_dropout_prob']),
+                'random_seed' : int(np.random.uniform(0,500))
 
         }
 
         # write file param config to params.json
         with open(json_path, 'w') as json_file:
             json.dump(param_config, json_file)
-        job_name = 'lr_{learning_rate}_shd_{sentence_hidden_dim}_hhd_{hierarchial_hidden_dim}_dahd_{da_hidden_dim}_fhd_{ff_hidden_dim}_bs_{batch_size}_fdp_{ff_dropout_prob}_rs_{random_seed}'.format(**param_config)
+
+        job_name = 'domain_{}_lr_{}_scale_{}_bs_{}_fdp_{:0.2f}_rs_{}'.format(args.domain, param_config['learning_rate'], model_scale, param_config['batch_size'], 
+                                param_config['ff_dropout_prob'], param_config['random_seed'])
+            
         run_training_job(args.output_dir, args.data_dir, job_name, param_config)
 
         

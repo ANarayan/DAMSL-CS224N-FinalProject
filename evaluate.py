@@ -9,9 +9,11 @@ import torch
 import utils
 
 from model.DSTModel import DST
-from model.DSTModel import goal_accuracy_metric
+from model.DSTModel import goal_accuracy
 from model.data_loader import DialoguesDataset
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
 from tqdm import trange
 import torch.nn.functional as F
 import torch.nn as nn
@@ -31,6 +33,9 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     validation_generator = evaluation_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False) 
 
     total_loss_eval = 0
+    total_tps, total_fps, total_fns = 0, 0, 0
+    joint_goal_acc_sum = 0
+    avg_goal_acc_sum = 0
 
     num_of_steps = evaluation_data.__len__() // batch_size
 
@@ -49,37 +54,55 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             output = output.squeeze(dim=1)
 
             # need to weight loss due to the imbalance in positive to negative examples 
-            weights = [300.0] * num_of_slots
+            weights = [20.0] * num_of_slots
             pos_weights = torch.tensor(weights)
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, cand_label)
 
+
             # generate summary statistics
-            accuracy = goal_accuracy_metric(output, cand_label).item()
-            total_loss = loss.sum().item()
-            avg_loss_batch = total_loss/(batch_size * num_of_slots)
+            true_pos, false_pos, false_neg, joint_goal_acc, goal_acc = goal_accuracy(output, cand_label)
+            # goal accuracy a.k.a precision
+            total_tps += true_pos
+            total_fps += false_pos
+            total_fns += false_neg
+            joint_goal_acc_sum += joint_goal_acc
+            avg_goal_acc_sum += goal_acc
 
-            summary_batch = {'goal_accuracy' : accuracy,
-                            'total_loss' : total_loss,
-                            'avg_loss' : avg_loss_batch
-                    }
+            batch_loss = loss.sum().item()
 
+            summary_batch = {
+                            'total_batch_loss' : batch_loss,
+                        }
             summ.append(summary_batch)
-            
+    
+           
             # add to total loss
-            total_loss_eval += total_loss
+            total_loss_eval += batch_loss
 
         # no more batches left
         except StopIteration:
             break
 
-        avg_loss_eval = total_loss_eval/((i+1) * batch_size * num_of_slots)
+    avg_loss_eval = total_loss_eval/(num_of_steps)
+    joint_goal_acc = joint_goal_acc_sum/(num_of_steps)
+    avg_goal_acc  = total_tps/(total_tps + total_fns)
+
+    precision = total_tps/(total_tps + total_fps) if (total_tps + total_fps) != 0 else 0 
+    recall = total_tps/(total_tps + total_fns) if (total_tps + total_fns) != 0 else 0 
+    f1 = 2 * (precision * recall)/(precision + recall) if precision != 0 and recall != 0 else 0
 
     
-    metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
+    metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]} 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    logging.info("Average Evaluation Loss: {}".format(avg_loss_eval))     
+    logging.info("Average Evaluation Loss: {}".format(avg_loss_eval))  
+    logging.info("Eval Precision: {}; Recall: {}; F1: {}".format(precision, recall, f1))  
+    logging.info("Joint goal accuracy: {}".format(joint_goal_acc))
+    logging.info("Average goal accuracy: {}".format(avg_goal_acc))
 
-    return metrics_mean   
+    metrics_mean['avg_goal_accuracy'] = avg_goal_acc
+    metrics_mean['joint_goal_accuracy'] = joint_goal_acc
+
+    return metrics_mean, total_loss_eval, avg_goal_acc, joint_goal_acc
 

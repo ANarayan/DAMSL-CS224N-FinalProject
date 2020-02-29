@@ -10,6 +10,9 @@ def read_json_file(file_path):
         params = json.load(file)
     return params
 
+def write_json_file(output, file_path):
+    with open(file_path, 'w') as file:
+        json.dump(output,file)
 
 def set_logger(log_path):
     """ Set up logger to store training info
