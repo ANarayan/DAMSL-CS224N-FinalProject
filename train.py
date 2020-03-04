@@ -28,13 +28,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/', help='Directory which contain the dialogue dataset')
 parser.add_argument('--model_dir', default='experiments/', help="Directory containing model config file")
 
-def compute_loss(model_output, labels, weights=None):
-    if weights:
-        loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
-    else:
-        loss_func =  nn.BCEWithLogitsLoss(reduction='none')
-    return 
-
 def train(model, training_data, optimizer, model_dir, training_params, dataset_params, device):
     """ Trains over the entire training data set """
 
@@ -135,81 +128,6 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         utils.save_dict_to_pkl(eval_metrics, last_json_path)
 
 
-def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, meta_optimizer, model_dir, data_dir, training_params, dataset_params, device):
-    """
-    Train on n - 1 domains, eval and test on nth 
-
-    Args:
-        trainandtest_data_files: dict {domain_name: {train_file_path: fp, test_file_path: fp}
-    """
-
-
-    # randomly initialize mdoel weights (done by constructing model by default)
-    
-    # Load training and test sets for n - 1 domains
-
-    domain_names = trainandtest_data_files.keys()
-    tasks_train = [DialoguesDataset(Path(data_dir) / trainandtest_data_files[domain]['train_file_path']) for d, f in
-            zip(domain_names, trainandtest_data_files)]
-    tasks_test = [DialoguesDataset(Path(data_dir) / trainandtest_data_files[domain]['test_file_path']) for d, f in
-            zip(domain_names, trainandtest_data_files)]
-    train_generators = [train_dataset.data_iterator(training_params['meta_inner_batch_size'], shuffle=True) for train_dataset in tasks_train]
-    test_generators = [test_dataset.data_iterator(training_params['meta_inner_batch_size'], shuffle=True) for
-            test_dataset in tasks_test]
-    generators = zip(train_generators, test_generators)
-
-    pos_weights = torch.tensor([training_params['pos_weighting']] * num_of_slots)
-    loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
-    
-    #Train
-    for meta_epoch in trange(training_params['meta_epochs']):
-
-        model_pre_metaupdate = deepcopy(model.state_dict())
-        
-        meta_batch_loss = 0
-        
-        task_test_losses_before_update = []
-        task_test_losses_after_update = []
-
-        #Sample batch
-        batch_of_tasks = random.sample(generators, training_params['meta_outer_batch_size'])
-        for t in batch_of_tasks:
-            try:
-                turn_and_cand_train, cand_label_train = next(t[0])
-                turn_and_cand_test, cand_label_test = next(t[1])
-            except StopIteration:
-                break
-
-            output_test = model(turn_and_cand_test)
-            task_test_loss_before_update = loss_func(output_test, cand_label_test).sum()
-            task_test_losses_before_update.append(task_test_losses_before_update)
-
-            output_train = model(turn_and_cand_train)
-            task_train_loss = loss_func(output_train, cand_label_train).sum()
-
-            optimizer.zero_grad()
-            task_train_loss.backward()
-            optimizer.step()
-
-            output_test = model(turn_and_cand_test)
-            task_test_loss_after_update = loss_func(output_test, cand_label_test).sum()
-            
-            meta_batch_loss += task_test_loss_after_update
-
-            #Restore weights to before any task loop updates
-            
-            model.load_state_dict(model_pre_metaupdate)
-            
-        #Meta update
-
-        meta_optimizer.zero_grad()
-        meta_batch_loss.backward()
-        meta_optimizer.step()
-            
-            
-    #Eval
-
-
 
 if __name__ == '__main__':
 
@@ -258,13 +176,6 @@ if __name__ == '__main__':
             'pos_weighting' : 20
         }
 
-        meta_training_params = {
-            'meta_epochs': 1,
-             #Number of domains
-            'meta_outer_batch_size': 1,
-            #Number of samples to pull from domain in inner training loop
-            'meta_inner_batch_size': 10
-        }
 
         dataset_params = {
             'batch_size': 2,

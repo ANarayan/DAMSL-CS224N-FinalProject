@@ -10973,3 +10973,381 @@
 2020-02-24 12:58:14,228:INFO: - Eval metrics : goal_accuracy: 1.000 ; total_loss: 0.013 ; avg_loss: 0.000
 2020-02-24 12:58:14,228:INFO: Average Evaluation Loss: 0.00018779209681919643
 2020-02-24 12:58:14,383:INFO: - Found new best accuracy
+2020-03-02 22:49:05,320:INFO: Loading the datasets...
+2020-03-02 22:49:05,321:INFO: -done
+2020-03-02 22:49:05,372:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:02:39,527:INFO: Loading the datasets...
+2020-03-02 23:02:39,527:INFO: -done
+2020-03-02 23:02:39,567:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:04:40,995:INFO: Loading the datasets...
+2020-03-02 23:04:40,995:INFO: -done
+2020-03-02 23:04:41,038:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:06:19,241:INFO: Loading the datasets...
+2020-03-02 23:06:19,242:INFO: -done
+2020-03-02 23:06:19,309:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:08:20,660:INFO: Loading the datasets...
+2020-03-02 23:08:20,661:INFO: -done
+2020-03-02 23:08:20,704:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:09:02,769:INFO: Meta epoch 0...
+2020-03-02 23:18:38,468:INFO: Loading the datasets...
+2020-03-02 23:18:38,469:INFO: -done
+2020-03-02 23:18:38,513:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:18:38,976:INFO: Meta epoch 0...
+2020-03-02 23:27:24,634:INFO: Loading the datasets...
+2020-03-02 23:27:24,634:INFO: -done
+2020-03-02 23:27:24,675:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:27:25,152:INFO: Meta epoch 0...
+2020-03-02 23:30:39,147:INFO: Meta batch loss: 214.44284057617188
+2020-03-02 23:33:37,136:INFO: Loading the datasets...
+2020-03-02 23:33:37,136:INFO: -done
+2020-03-02 23:33:37,185:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:33:37,595:INFO: Meta epoch 0...
+2020-03-02 23:33:38,694:INFO: Meta batch loss: 218.44039916992188
+2020-03-02 23:34:45,715:INFO: Loading the datasets...
+2020-03-02 23:34:45,716:INFO: -done
+2020-03-02 23:34:45,751:INFO: Starting MAML for 1 meta epoch(s)
+2020-03-02 23:34:46,133:INFO: Meta epoch 0...
+2020-03-02 23:34:46,967:INFO: Meta batch loss: 215.5397186279297
+2020-03-02 23:34:46,968:INFO: Average inner loss before inner updates : 242.65692138671875
+2020-03-02 23:34:46,968:INFO: Average inner loss after inner updates : 215.5397186279297
+2020-03-02 23:35:24,339:INFO: Loading the datasets...
+2020-03-02 23:35:24,339:INFO: -done
+2020-03-02 23:35:24,375:INFO: Starting MAML for 10 meta epoch(s)
+2020-03-02 23:35:24,772:INFO: Meta epoch 0...
+2020-03-02 23:35:25,640:INFO: Meta batch loss: 210.08570861816406
+2020-03-02 23:35:25,640:INFO: Average inner loss before inner updates : 238.9788055419922
+2020-03-02 23:35:25,641:INFO: Average inner loss after inner updates : 210.08570861816406
+2020-03-02 23:35:25,641:INFO: Meta epoch 1...
+2020-03-02 23:35:26,348:INFO: Meta batch loss: 206.1505584716797
+2020-03-02 23:35:26,348:INFO: Average inner loss before inner updates : 229.23533630371094
+2020-03-02 23:35:26,348:INFO: Average inner loss after inner updates : 206.1505584716797
+2020-03-02 23:35:26,348:INFO: Meta epoch 2...
+2020-03-02 23:35:27,131:INFO: Meta batch loss: 185.90769958496094
+2020-03-02 23:35:27,131:INFO: Average inner loss before inner updates : 216.323486328125
+2020-03-02 23:35:27,131:INFO: Average inner loss after inner updates : 185.90769958496094
+2020-03-02 23:35:27,132:INFO: Meta epoch 3...
+2020-03-02 23:35:27,967:INFO: Meta batch loss: 147.85304260253906
+2020-03-02 23:35:27,967:INFO: Average inner loss before inner updates : 174.28134155273438
+2020-03-02 23:35:27,967:INFO: Average inner loss after inner updates : 147.85304260253906
+2020-03-02 23:35:27,967:INFO: Meta epoch 4...
+2020-03-02 23:35:28,748:INFO: Meta batch loss: 120.17803955078125
+2020-03-02 23:35:28,748:INFO: Average inner loss before inner updates : 138.4496307373047
+2020-03-02 23:35:28,748:INFO: Average inner loss after inner updates : 120.17803955078125
+2020-03-02 23:35:28,748:INFO: Meta epoch 5...
+2020-03-02 23:35:29,580:INFO: Meta batch loss: 161.23536682128906
+2020-03-02 23:35:29,580:INFO: Average inner loss before inner updates : 186.0060577392578
+2020-03-02 23:35:29,580:INFO: Average inner loss after inner updates : 161.23536682128906
+2020-03-02 23:35:29,580:INFO: Meta epoch 6...
+2020-03-02 23:35:30,413:INFO: Meta batch loss: 98.51287078857422
+2020-03-02 23:35:30,413:INFO: Average inner loss before inner updates : 116.13414764404297
+2020-03-02 23:35:30,413:INFO: Average inner loss after inner updates : 98.51287078857422
+2020-03-02 23:35:30,414:INFO: Meta epoch 7...
+2020-03-02 23:35:31,201:INFO: Meta batch loss: 163.3354034423828
+2020-03-02 23:35:31,202:INFO: Average inner loss before inner updates : 179.46063232421875
+2020-03-02 23:35:31,202:INFO: Average inner loss after inner updates : 163.3354034423828
+2020-03-02 23:35:31,202:INFO: Meta epoch 8...
+2020-03-02 23:35:31,949:INFO: Meta batch loss: 98.54365539550781
+2020-03-02 23:35:31,950:INFO: Average inner loss before inner updates : 111.73861694335938
+2020-03-02 23:35:31,950:INFO: Average inner loss after inner updates : 98.54365539550781
+2020-03-02 23:35:31,950:INFO: Meta epoch 9...
+2020-03-02 23:35:32,764:INFO: Meta batch loss: 122.92777252197266
+2020-03-02 23:35:32,765:INFO: Average inner loss before inner updates : 134.45523071289062
+2020-03-02 23:35:32,765:INFO: Average inner loss after inner updates : 122.92777252197266
+2020-03-02 23:37:58,421:INFO: Loading the datasets...
+2020-03-02 23:37:58,422:INFO: -done
+2020-03-02 23:37:58,457:INFO: Starting MAML for 10 meta epoch(s)
+2020-03-02 23:37:58,847:INFO: Meta epoch 0...
+2020-03-02 23:37:59,722:INFO: Meta batch loss: 217.59646606445312
+2020-03-02 23:37:59,722:INFO: Average inner loss before inner updates : 245.37730407714844
+2020-03-02 23:37:59,722:INFO: Average inner loss after inner updates : 217.59646606445312
+2020-03-02 23:37:59,722:INFO: Meta epoch 1...
+2020-03-02 23:38:00,428:INFO: Meta batch loss: 215.2881622314453
+2020-03-02 23:38:00,429:INFO: Average inner loss before inner updates : 238.3275909423828
+2020-03-02 23:38:00,429:INFO: Average inner loss after inner updates : 215.2881622314453
+2020-03-02 23:38:00,429:INFO: Meta epoch 2...
+2020-03-02 23:38:01,216:INFO: Meta batch loss: 192.02333068847656
+2020-03-02 23:38:01,217:INFO: Average inner loss before inner updates : 222.57855224609375
+2020-03-02 23:38:01,217:INFO: Average inner loss after inner updates : 192.02333068847656
+2020-03-02 23:38:01,217:INFO: Meta epoch 3...
+2020-03-02 23:38:02,040:INFO: Meta batch loss: 157.9416961669922
+2020-03-02 23:38:02,040:INFO: Average inner loss before inner updates : 184.24459838867188
+2020-03-02 23:38:02,040:INFO: Average inner loss after inner updates : 157.9416961669922
+2020-03-02 23:38:02,040:INFO: Meta epoch 4...
+2020-03-02 23:38:02,809:INFO: Meta batch loss: 125.09440612792969
+2020-03-02 23:38:02,810:INFO: Average inner loss before inner updates : 143.188720703125
+2020-03-02 23:38:02,810:INFO: Average inner loss after inner updates : 125.09440612792969
+2020-03-02 23:38:02,810:INFO: Meta epoch 5...
+2020-03-02 23:38:03,627:INFO: Meta batch loss: 172.27651977539062
+2020-03-02 23:38:03,627:INFO: Average inner loss before inner updates : 195.60726928710938
+2020-03-02 23:38:03,627:INFO: Average inner loss after inner updates : 172.27651977539062
+2020-03-02 23:38:03,628:INFO: Meta epoch 6...
+2020-03-02 23:38:04,448:INFO: Meta batch loss: 124.58323669433594
+2020-03-02 23:38:04,449:INFO: Average inner loss before inner updates : 141.42860412597656
+2020-03-02 23:38:04,449:INFO: Average inner loss after inner updates : 124.58323669433594
+2020-03-02 23:38:04,449:INFO: Meta epoch 7...
+2020-03-02 23:38:05,230:INFO: Meta batch loss: 168.54904174804688
+2020-03-02 23:38:05,230:INFO: Average inner loss before inner updates : 184.69851684570312
+2020-03-02 23:38:05,230:INFO: Average inner loss after inner updates : 168.54904174804688
+2020-03-02 23:38:05,230:INFO: Meta epoch 8...
+2020-03-02 23:38:05,977:INFO: Meta batch loss: 90.61067199707031
+2020-03-02 23:38:05,977:INFO: Average inner loss before inner updates : 102.89852142333984
+2020-03-02 23:38:05,977:INFO: Average inner loss after inner updates : 90.61067199707031
+2020-03-02 23:38:05,978:INFO: Meta epoch 9...
+2020-03-02 23:38:06,792:INFO: Meta batch loss: 126.8630599975586
+2020-03-02 23:38:06,792:INFO: Average inner loss before inner updates : 138.5106658935547
+2020-03-02 23:38:06,792:INFO: Average inner loss after inner updates : 126.8630599975586
+2020-03-02 23:38:24,757:INFO: Loading the datasets...
+2020-03-02 23:38:24,757:INFO: -done
+2020-03-02 23:38:24,793:INFO: Starting MAML for 10 meta epoch(s)
+2020-03-02 23:38:25,191:INFO: Meta epoch 0...
+2020-03-02 23:38:26,036:INFO: Meta batch loss: 219.81982421875
+2020-03-02 23:38:26,036:INFO: Average inner loss before inner updates : 244.2548065185547
+2020-03-02 23:38:26,036:INFO: Average inner loss after inner updates : 219.81982421875
+2020-03-02 23:38:26,036:INFO: Meta epoch 1...
+2020-03-02 23:38:26,739:INFO: Meta batch loss: 215.80111694335938
+2020-03-02 23:38:26,739:INFO: Average inner loss before inner updates : 237.72752380371094
+2020-03-02 23:38:26,740:INFO: Average inner loss after inner updates : 215.80111694335938
+2020-03-02 23:38:26,740:INFO: Meta epoch 2...
+2020-03-02 23:38:27,522:INFO: Meta batch loss: 199.62127685546875
+2020-03-02 23:38:27,522:INFO: Average inner loss before inner updates : 227.48330688476562
+2020-03-02 23:38:27,522:INFO: Average inner loss after inner updates : 199.62127685546875
+2020-03-02 23:38:27,522:INFO: Meta epoch 3...
+2020-03-02 23:38:28,367:INFO: Meta batch loss: 162.4988555908203
+2020-03-02 23:38:28,367:INFO: Average inner loss before inner updates : 189.57383728027344
+2020-03-02 23:38:28,368:INFO: Average inner loss after inner updates : 162.4988555908203
+2020-03-02 23:38:28,368:INFO: Meta epoch 4...
+2020-03-02 23:38:29,132:INFO: Meta batch loss: 127.38822937011719
+2020-03-02 23:38:29,133:INFO: Average inner loss before inner updates : 146.55596923828125
+2020-03-02 23:38:29,133:INFO: Average inner loss after inner updates : 127.38822937011719
+2020-03-02 23:38:29,133:INFO: Meta epoch 5...
+2020-03-02 23:38:29,946:INFO: Meta batch loss: 154.48777770996094
+2020-03-02 23:38:29,947:INFO: Average inner loss before inner updates : 179.83802795410156
+2020-03-02 23:38:29,947:INFO: Average inner loss after inner updates : 154.48777770996094
+2020-03-02 23:38:29,947:INFO: Meta epoch 6...
+2020-03-02 23:38:30,757:INFO: Meta batch loss: 101.14060974121094
+2020-03-02 23:38:30,758:INFO: Average inner loss before inner updates : 118.61073303222656
+2020-03-02 23:38:30,758:INFO: Average inner loss after inner updates : 101.14060974121094
+2020-03-02 23:38:30,758:INFO: Meta epoch 7...
+2020-03-02 23:38:31,541:INFO: Meta batch loss: 158.8622283935547
+2020-03-02 23:38:31,542:INFO: Average inner loss before inner updates : 173.4469451904297
+2020-03-02 23:38:31,542:INFO: Average inner loss after inner updates : 158.8622283935547
+2020-03-02 23:38:31,542:INFO: Meta epoch 8...
+2020-03-02 23:38:32,290:INFO: Meta batch loss: 92.4090347290039
+2020-03-02 23:38:32,290:INFO: Average inner loss before inner updates : 105.12862396240234
+2020-03-02 23:38:32,291:INFO: Average inner loss after inner updates : 92.4090347290039
+2020-03-02 23:38:32,291:INFO: Meta epoch 9...
+2020-03-02 23:38:33,098:INFO: Meta batch loss: 127.71184539794922
+2020-03-02 23:38:33,099:INFO: Average inner loss before inner updates : 139.3071746826172
+2020-03-02 23:38:33,099:INFO: Average inner loss after inner updates : 127.71184539794922
+2020-03-02 23:38:49,377:INFO: Loading the datasets...
+2020-03-02 23:38:49,377:INFO: -done
+2020-03-02 23:38:49,415:INFO: Starting MAML for 100 meta epoch(s)
+2020-03-02 23:38:49,810:INFO: Meta epoch 0...
+2020-03-02 23:38:50,663:INFO: Meta batch loss: 219.07289123535156
+2020-03-02 23:38:50,663:INFO: Average inner loss before inner updates : 246.22036743164062
+2020-03-02 23:38:50,663:INFO: Average inner loss after inner updates : 219.07289123535156
+2020-03-02 23:38:50,663:INFO: Meta epoch 1...
+2020-03-02 23:38:51,365:INFO: Meta batch loss: 215.2685546875
+2020-03-02 23:38:51,365:INFO: Average inner loss before inner updates : 238.50570678710938
+2020-03-02 23:38:51,366:INFO: Average inner loss after inner updates : 215.2685546875
+2020-03-02 23:38:51,366:INFO: Meta epoch 2...
+2020-03-02 23:38:52,146:INFO: Meta batch loss: 198.7509002685547
+2020-03-02 23:38:52,146:INFO: Average inner loss before inner updates : 227.84706115722656
+2020-03-02 23:38:52,146:INFO: Average inner loss after inner updates : 198.7509002685547
+2020-03-02 23:38:52,146:INFO: Meta epoch 3...
+2020-03-02 23:38:52,981:INFO: Meta batch loss: 163.04530334472656
+2020-03-02 23:38:52,981:INFO: Average inner loss before inner updates : 191.48291015625
+2020-03-02 23:38:52,982:INFO: Average inner loss after inner updates : 163.04530334472656
+2020-03-02 23:38:52,982:INFO: Meta epoch 4...
+2020-03-02 23:38:53,747:INFO: Meta batch loss: 125.6114501953125
+2020-03-02 23:38:53,747:INFO: Average inner loss before inner updates : 146.58743286132812
+2020-03-02 23:38:53,747:INFO: Average inner loss after inner updates : 125.6114501953125
+2020-03-02 23:38:53,748:INFO: Meta epoch 5...
+2020-03-02 23:38:54,570:INFO: Meta batch loss: 166.32147216796875
+2020-03-02 23:38:54,570:INFO: Average inner loss before inner updates : 191.14004516601562
+2020-03-02 23:38:54,571:INFO: Average inner loss after inner updates : 166.32147216796875
+2020-03-02 23:38:54,571:INFO: Meta epoch 6...
+2020-03-02 23:38:55,387:INFO: Meta batch loss: 86.99205017089844
+2020-03-02 23:38:55,388:INFO: Average inner loss before inner updates : 106.90157318115234
+2020-03-02 23:38:55,388:INFO: Average inner loss after inner updates : 86.99205017089844
+2020-03-02 23:38:55,388:INFO: Meta epoch 7...
+2020-03-02 23:38:56,169:INFO: Meta batch loss: 151.52691650390625
+2020-03-02 23:38:56,169:INFO: Average inner loss before inner updates : 165.15670776367188
+2020-03-02 23:38:56,169:INFO: Average inner loss after inner updates : 151.52691650390625
+2020-03-02 23:38:56,169:INFO: Meta epoch 8...
+2020-03-02 23:38:56,910:INFO: Meta batch loss: 65.75668334960938
+2020-03-02 23:38:56,910:INFO: Average inner loss before inner updates : 75.2214126586914
+2020-03-02 23:38:56,910:INFO: Average inner loss after inner updates : 65.75668334960938
+2020-03-02 23:38:56,911:INFO: Meta epoch 9...
+2020-03-02 23:38:57,722:INFO: Meta batch loss: 114.81409454345703
+2020-03-02 23:38:57,722:INFO: Average inner loss before inner updates : 126.7420654296875
+2020-03-02 23:38:57,722:INFO: Average inner loss after inner updates : 114.81409454345703
+2020-03-02 23:38:57,722:INFO: Meta epoch 10...
+2020-03-02 23:38:58,448:INFO: Meta batch loss: 173.1013641357422
+2020-03-02 23:38:58,448:INFO: Average inner loss before inner updates : 172.55506896972656
+2020-03-02 23:38:58,448:INFO: Average inner loss after inner updates : 173.1013641357422
+2020-03-02 23:38:58,448:INFO: Meta epoch 11...
+2020-03-02 23:38:59,343:INFO: Meta batch loss: 113.82835388183594
+2020-03-02 23:38:59,344:INFO: Average inner loss before inner updates : 117.54207611083984
+2020-03-02 23:38:59,344:INFO: Average inner loss after inner updates : 113.82835388183594
+2020-03-02 23:38:59,344:INFO: Meta epoch 12...
+2020-03-02 23:39:00,104:INFO: Meta batch loss: 80.5253677368164
+2020-03-02 23:39:00,104:INFO: Average inner loss before inner updates : 90.40387725830078
+2020-03-02 23:39:00,104:INFO: Average inner loss after inner updates : 80.5253677368164
+2020-03-02 23:39:00,104:INFO: Meta epoch 13...
+2020-03-02 23:39:00,915:INFO: Meta batch loss: 30.373525619506836
+2020-03-02 23:39:00,915:INFO: Average inner loss before inner updates : 42.137535095214844
+2020-03-02 23:39:00,915:INFO: Average inner loss after inner updates : 30.373525619506836
+2020-03-02 23:39:00,915:INFO: Meta epoch 14...
+2020-03-02 23:39:01,614:INFO: Meta batch loss: 16.649688720703125
+2020-03-02 23:39:01,615:INFO: Average inner loss before inner updates : 27.41710090637207
+2020-03-02 23:39:01,615:INFO: Average inner loss after inner updates : 16.649688720703125
+2020-03-02 23:39:01,615:INFO: Meta epoch 15...
+2020-03-02 23:39:02,380:INFO: Meta batch loss: 5.938746452331543
+2020-03-02 23:39:02,380:INFO: Average inner loss before inner updates : 11.149126052856445
+2020-03-02 23:39:02,380:INFO: Average inner loss after inner updates : 5.938746452331543
+2020-03-02 23:39:02,381:INFO: Meta epoch 16...
+2020-03-02 23:39:03,212:INFO: Meta batch loss: 47.88550567626953
+2020-03-02 23:39:03,212:INFO: Average inner loss before inner updates : 63.08145523071289
+2020-03-02 23:39:03,212:INFO: Average inner loss after inner updates : 47.88550567626953
+2020-03-02 23:39:03,212:INFO: Meta epoch 17...
+2020-03-02 23:39:03,926:INFO: Meta batch loss: 4.777657508850098
+2020-03-02 23:39:03,926:INFO: Average inner loss before inner updates : 7.927421569824219
+2020-03-02 23:39:03,926:INFO: Average inner loss after inner updates : 4.777657508850098
+2020-03-02 23:39:03,926:INFO: Meta epoch 18...
+2020-03-02 23:39:04,685:INFO: Meta batch loss: 8.249938011169434
+2020-03-02 23:39:04,686:INFO: Average inner loss before inner updates : 12.043867111206055
+2020-03-02 23:39:04,686:INFO: Average inner loss after inner updates : 8.249938011169434
+2020-03-02 23:39:04,686:INFO: Meta epoch 19...
+2020-03-02 23:39:05,455:INFO: Meta batch loss: 0.6321580410003662
+2020-03-02 23:39:05,455:INFO: Average inner loss before inner updates : 0.9314455986022949
+2020-03-02 23:39:05,455:INFO: Average inner loss after inner updates : 0.6321580410003662
+2020-03-02 23:39:05,455:INFO: Meta epoch 20...
+2020-03-02 23:39:06,303:INFO: Meta batch loss: 0.10106611251831055
+2020-03-02 23:39:06,304:INFO: Average inner loss before inner updates : 0.20246362686157227
+2020-03-02 23:39:06,304:INFO: Average inner loss after inner updates : 0.10106611251831055
+2020-03-02 23:39:06,304:INFO: Meta epoch 21...
+2020-03-02 23:39:07,015:INFO: Meta batch loss: 3.5186758041381836
+2020-03-02 23:39:07,015:INFO: Average inner loss before inner updates : 6.459990501403809
+2020-03-02 23:39:07,016:INFO: Average inner loss after inner updates : 3.5186758041381836
+2020-03-02 23:39:07,016:INFO: Meta epoch 22...
+2020-03-02 23:39:07,845:INFO: Meta batch loss: 1.2729384899139404
+2020-03-02 23:39:07,845:INFO: Average inner loss before inner updates : 2.652520179748535
+2020-03-02 23:39:07,846:INFO: Average inner loss after inner updates : 1.2729384899139404
+2020-03-02 23:39:07,846:INFO: Meta epoch 23...
+2020-03-02 23:39:08,590:INFO: Meta batch loss: 5.426245212554932
+2020-03-02 23:39:08,590:INFO: Average inner loss before inner updates : 10.839173316955566
+2020-03-02 23:39:08,591:INFO: Average inner loss after inner updates : 5.426245212554932
+2020-03-02 23:39:08,591:INFO: Meta epoch 24...
+2020-03-02 23:39:09,461:INFO: Meta batch loss: 142.8346710205078
+2020-03-02 23:39:09,461:INFO: Average inner loss before inner updates : 171.17138671875
+2020-03-02 23:39:09,461:INFO: Average inner loss after inner updates : 142.8346710205078
+2020-03-02 23:39:09,461:INFO: Meta epoch 25...
+2020-03-02 23:39:10,242:INFO: Meta batch loss: 0.016142845153808594
+2020-03-02 23:39:10,242:INFO: Average inner loss before inner updates : 0.019088268280029297
+2020-03-02 23:39:10,242:INFO: Average inner loss after inner updates : 0.016142845153808594
+2020-03-02 23:39:10,243:INFO: Meta epoch 26...
+2020-03-02 23:39:11,111:INFO: Meta batch loss: 23.290714263916016
+2020-03-02 23:39:11,112:INFO: Average inner loss before inner updates : 30.75712013244629
+2020-03-02 23:39:11,112:INFO: Average inner loss after inner updates : 23.290714263916016
+2020-03-02 23:39:11,112:INFO: Meta epoch 27...
+2020-03-02 23:39:11,871:INFO: Meta batch loss: 1.1310837268829346
+2020-03-02 23:39:11,871:INFO: Average inner loss before inner updates : 1.5246152877807617
+2020-03-02 23:39:11,871:INFO: Average inner loss after inner updates : 1.1310837268829346
+2020-03-02 23:39:11,871:INFO: Meta epoch 28...
+2020-03-02 23:39:12,687:INFO: Meta batch loss: 2.535482406616211
+2020-03-02 23:39:12,688:INFO: Average inner loss before inner updates : 3.6052358150482178
+2020-03-02 23:39:12,688:INFO: Average inner loss after inner updates : 2.535482406616211
+2020-03-02 23:39:12,688:INFO: Meta epoch 29...
+2020-03-02 23:39:13,444:INFO: Meta batch loss: 1.9189269542694092
+2020-03-02 23:39:13,444:INFO: Average inner loss before inner updates : 2.0250306129455566
+2020-03-02 23:39:13,444:INFO: Average inner loss after inner updates : 1.9189269542694092
+2020-03-02 23:39:13,444:INFO: Meta epoch 30...
+2020-03-02 23:39:14,205:INFO: Meta batch loss: 3.1809232234954834
+2020-03-02 23:39:14,205:INFO: Average inner loss before inner updates : 3.5267553329467773
+2020-03-02 23:39:14,205:INFO: Average inner loss after inner updates : 3.1809232234954834
+2020-03-02 23:39:14,205:INFO: Meta epoch 31...
+2020-03-02 23:39:15,115:INFO: Meta batch loss: 5.935591697692871
+2020-03-02 23:39:15,115:INFO: Average inner loss before inner updates : 8.693816184997559
+2020-03-02 23:39:15,116:INFO: Average inner loss after inner updates : 5.935591697692871
+2020-03-02 23:39:15,116:INFO: Meta epoch 32...
+2020-03-02 23:39:15,867:INFO: Meta batch loss: 4.6199798583984375
+2020-03-02 23:39:15,867:INFO: Average inner loss before inner updates : 5.259580612182617
+2020-03-02 23:39:15,867:INFO: Average inner loss after inner updates : 4.6199798583984375
+2020-03-02 23:39:15,867:INFO: Meta epoch 33...
+2020-03-02 23:39:16,620:INFO: Meta batch loss: 807.7474975585938
+2020-03-02 23:39:16,620:INFO: Average inner loss before inner updates : 974.6959228515625
+2020-03-02 23:39:16,620:INFO: Average inner loss after inner updates : 807.7474975585938
+2020-03-02 23:39:16,621:INFO: Meta epoch 34...
+2020-03-02 23:39:17,454:INFO: Meta batch loss: 105.33010864257812
+2020-03-02 23:39:17,455:INFO: Average inner loss before inner updates : 128.79930114746094
+2020-03-02 23:39:17,455:INFO: Average inner loss after inner updates : 105.33010864257812
+2020-03-02 23:39:17,455:INFO: Meta epoch 35...
+2020-03-02 23:39:18,241:INFO: Meta batch loss: 127.85371398925781
+2020-03-02 23:39:18,241:INFO: Average inner loss before inner updates : 175.8708038330078
+2020-03-02 23:39:18,241:INFO: Average inner loss after inner updates : 127.85371398925781
+2020-03-02 23:39:18,242:INFO: Meta epoch 36...
+2020-03-02 23:39:18,952:INFO: Meta batch loss: 48.857215881347656
+2020-03-02 23:39:18,952:INFO: Average inner loss before inner updates : 55.63971710205078
+2020-03-02 23:39:18,952:INFO: Average inner loss after inner updates : 48.857215881347656
+2020-03-02 23:39:18,953:INFO: Meta epoch 37...
+2020-03-02 23:39:19,866:INFO: Meta batch loss: 383.147216796875
+2020-03-02 23:39:19,867:INFO: Average inner loss before inner updates : 493.75457763671875
+2020-03-02 23:39:19,867:INFO: Average inner loss after inner updates : 383.147216796875
+2020-03-02 23:39:19,867:INFO: Meta epoch 38...
+2020-03-02 23:39:20,658:INFO: Meta batch loss: 7.188773155212402
+2020-03-02 23:39:20,658:INFO: Average inner loss before inner updates : 8.047086715698242
+2020-03-02 23:39:20,658:INFO: Average inner loss after inner updates : 7.188773155212402
+2020-03-02 23:39:20,659:INFO: Meta epoch 39...
+2020-03-02 23:39:21,389:INFO: Meta batch loss: 5.7297773361206055
+2020-03-02 23:39:21,389:INFO: Average inner loss before inner updates : 5.904422283172607
+2020-03-02 23:39:21,389:INFO: Average inner loss after inner updates : 5.7297773361206055
+2020-03-02 23:39:21,389:INFO: Meta epoch 40...
+2020-03-02 23:39:22,154:INFO: Meta batch loss: 13.753124237060547
+2020-03-02 23:39:22,154:INFO: Average inner loss before inner updates : 14.788104057312012
+2020-03-02 23:39:22,154:INFO: Average inner loss after inner updates : 13.753124237060547
+2020-03-02 23:39:22,155:INFO: Meta epoch 41...
+2020-03-02 23:39:22,857:INFO: Meta batch loss: 8.565221786499023
+2020-03-02 23:39:22,857:INFO: Average inner loss before inner updates : 8.88831901550293
+2020-03-02 23:39:22,858:INFO: Average inner loss after inner updates : 8.565221786499023
+2020-03-02 23:39:22,858:INFO: Meta epoch 42...
+2020-03-02 23:39:23,511:INFO: Meta batch loss: 15.508447647094727
+2020-03-02 23:39:23,512:INFO: Average inner loss before inner updates : 16.458961486816406
+2020-03-02 23:39:23,512:INFO: Average inner loss after inner updates : 15.508447647094727
+2020-03-02 23:39:23,512:INFO: Meta epoch 43...
+2020-03-02 23:39:24,330:INFO: Meta batch loss: 34.41122055053711
+2020-03-02 23:39:24,330:INFO: Average inner loss before inner updates : 39.097938537597656
+2020-03-02 23:39:24,331:INFO: Average inner loss after inner updates : 34.41122055053711
+2020-03-02 23:39:24,331:INFO: Meta epoch 44...
+2020-03-02 23:39:25,154:INFO: Meta batch loss: 53.57752227783203
+2020-03-02 23:39:25,154:INFO: Average inner loss before inner updates : 73.37156677246094
+2020-03-02 23:39:25,154:INFO: Average inner loss after inner updates : 53.57752227783203
+2020-03-02 23:39:25,154:INFO: Meta epoch 45...
+2020-03-02 23:39:25,974:INFO: Meta batch loss: 3.8791041374206543
+2020-03-02 23:39:25,974:INFO: Average inner loss before inner updates : 4.121500492095947
+2020-03-02 23:39:25,974:INFO: Average inner loss after inner updates : 3.8791041374206543
+2020-03-02 23:39:25,974:INFO: Meta epoch 46...
+2020-03-02 23:39:26,831:INFO: Meta batch loss: 0.4427618980407715
+2020-03-02 23:39:26,831:INFO: Average inner loss before inner updates : 0.47235584259033203
+2020-03-02 23:39:26,831:INFO: Average inner loss after inner updates : 0.4427618980407715
+2020-03-02 23:39:26,831:INFO: Meta epoch 47...
+2020-03-02 23:39:27,639:INFO: Meta batch loss: 51.93882751464844
+2020-03-02 23:39:27,639:INFO: Average inner loss before inner updates : 72.96212768554688
+2020-03-02 23:39:27,639:INFO: Average inner loss after inner updates : 51.93882751464844
+2020-03-02 23:39:27,639:INFO: Meta epoch 48...
+2020-03-02 23:39:28,333:INFO: Meta batch loss: 0.1993422508239746
+2020-03-02 23:39:28,334:INFO: Average inner loss before inner updates : 0.20089435577392578
+2020-03-02 23:39:28,334:INFO: Average inner loss after inner updates : 0.1993422508239746
+2020-03-02 23:39:28,334:INFO: Meta epoch 49...
+2020-03-02 23:39:29,185:INFO: Meta batch loss: 3.1063807010650635
+2020-03-02 23:39:29,186:INFO: Average inner loss before inner updates : 3.28228759765625
+2020-03-02 23:39:29,186:INFO: Average inner loss after inner updates : 3.1063807010650635
+2020-03-02 23:39:29,186:INFO: Meta epoch 50...
+2020-03-02 23:39:29,968:INFO: Meta batch loss: 42.1606330871582
+2020-03-02 23:39:29,968:INFO: Average inner loss before inner updates : 54.1448860168457
+2020-03-02 23:39:29,969:INFO: Average inner loss after inner updates : 42.1606330871582
+2020-03-02 23:39:29,969:INFO: Meta epoch 51...
+2020-03-02 23:39:30,797:INFO: Meta batch loss: 1.5613958835601807
+2020-03-02 23:39:30,797:INFO: Average inner loss before inner updates : 1.6860376596450806
+2020-03-02 23:39:30,797:INFO: Average inner loss after inner updates : 1.5613958835601807
+2020-03-02 23:39:30,797:INFO: Meta epoch 52...
