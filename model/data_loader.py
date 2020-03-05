@@ -18,7 +18,7 @@ class DialoguesDataset(Dataset):
             data_file (string): Path to pickle file with turn+candidate pairs.
         """
         dialogue_data = open(data_file, 'rb') 
-        self.turn_cand_dps= pickle.load(dialogue_data)[0:284800] # need to make sure it divisible by all batch sizes
+        self.turn_cand_dps= pickle.load(dialogue_data) # need to make sure it divisible by all batch sizes
      
     def __len__(self):
         return len(self.turn_cand_dps)
@@ -60,8 +60,7 @@ class DialoguesDataset(Dataset):
 
             batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
 
-            if torch.cuda.is_available():
-                batch_data, batch_labels = batch_data.cuda(), batch_labels.cuda()
+          
             
             #print(batch_data.type)
 

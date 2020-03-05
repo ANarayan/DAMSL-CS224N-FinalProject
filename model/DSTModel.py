@@ -216,6 +216,7 @@ def goal_accuracy(output, labels):
     predicted_ouputs = torch.round(sigmoid_output)
     true_positives = 0
     false_positives = 0
+    true_negatives = 0
     false_negatives = 0
 
     #print(labels)
@@ -225,10 +226,13 @@ def goal_accuracy(output, labels):
         true_positives = ((predicted_ouputs == 1) == (labels == 1)).sum().item()
         false_positives = ((predicted_ouputs == 1) == (labels != 1)).sum().item()
         false_negatives = ((predicted_ouputs != 1) == (labels == 1)).sum().item()
-   
+        true_negatives = ((predicted_ouputs != 1) == (labels != 1)).sum().item()
+
+    total_slots = labels.numel()
+    total_matches = (predicted_ouputs == labels).sum().item()
     joint_goal_accuracy = (true_positives == (true_positives + false_negatives))
-    average_slot_accuracy = (true_positives/(true_positives + false_negatives)) if (true_positives + false_negatives) != 0 else 0
-        
-    return true_positives, false_positives, false_negatives, joint_goal_accuracy, average_slot_accuracy
+    average_slot_accuracy = (total_matches/labels.numel()) 
+    
+    return true_positives, false_positives, true_negatives, false_negatives, joint_goal_accuracy, average_slot_accuracy, total_matches, total_slots
         
 

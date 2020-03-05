@@ -33,7 +33,7 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     validation_generator = evaluation_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=False) 
 
     total_loss_eval = 0
-    total_tps, total_fps, total_fns = 0, 0, 0
+    total_tps, total_fps,total_tns, total_fns, correct_class, total_class = 0, 0, 0, 0, 0,0
     joint_goal_acc_sum = 0
     avg_goal_acc_sum = 0
 
@@ -51,7 +51,7 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
 
             output = model.forward(context_vectors, candidates) 
-            output = output.squeeze(dim=1)
+            output = output.squeeze(dim=1).cpu()
 
             # need to weight loss due to the imbalance in positive to negative examples 
             weights = [20.0] * num_of_slots
@@ -61,18 +61,22 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
 
 
             # generate summary statistics
-            true_pos, false_pos, false_neg, joint_goal_acc, goal_acc = goal_accuracy(output, cand_label)
+            true_pos, false_pos, true_neg, false_neg, joint_goal_acc, goal_acc, all_matches, all_class = goal_accuracy(output, cand_label)
             # goal accuracy a.k.a precision
             total_tps += true_pos
             total_fps += false_pos
+            total_tns += true_neg
             total_fns += false_neg
             joint_goal_acc_sum += joint_goal_acc
             avg_goal_acc_sum += goal_acc
 
+            correct_class += all_matches
+            total_class += all_class
+
             batch_loss = loss.sum().item()
 
             summary_batch = {
-                            'total_batch_loss' : batch_loss,
+                            'batch_loss' : batch_loss,
                         }
             summ.append(summary_batch)
     
@@ -86,10 +90,10 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
 
     avg_loss_eval = total_loss_eval/(num_of_steps)
     joint_goal_acc = joint_goal_acc_sum/(num_of_steps)
-    avg_goal_acc  = total_tps/(total_tps + total_fns)
+    avg_goal_acc  = correct_class/total_class
 
     precision = total_tps/(total_tps + total_fps) if (total_tps + total_fps) != 0 else 0 
-    recall = total_tps/(total_tps + total_fns) if (total_tps + total_fns) != 0 else 0 
+    recall = (total_tps + total_tns)/(total_tps + total_fns + total_tns + total_fps) if (total_tps + total_fns) != 0 else 0 
     f1 = 2 * (precision * recall)/(precision + recall) if precision != 0 and recall != 0 else 0
 
     

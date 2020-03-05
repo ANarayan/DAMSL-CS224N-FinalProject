@@ -40,7 +40,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     summ = []
     num_of_slots = 35
     total_loss_train = 0
-    total_tps, total_fps, total_fns = 0, 0, 0 
+    total_tps, total_fps, total_tns, total_fns, correct_slots, total_slots = 0, 0, 0, 0, 0,0
     joint_goal_acc_sum = 0
     avg_goal_acc_sum = 0
 
@@ -54,7 +54,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
             context_vectors = torch.stack([model.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
             candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
             output = model.forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
-            output = output.squeeze(dim=1)
+            output = output.squeeze(dim=1).cpu()
 
             # need to weight loss due to the imbalance in positive to negative examples 
             # Confirm the 300
@@ -72,18 +72,22 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
             optimizer.step()
 
             # generate summary statistics
-            true_pos, false_pos, false_neg, joint_goal_acc, goal_acc = goal_accuracy(output, cand_label)
+            true_pos, false_pos, true_neg, false_neg, joint_goal_acc, goal_acc, matches, all_class = goal_accuracy(output, cand_label)
             # goal accuracy a.k.a precision
             total_tps += true_pos
             total_fps += false_pos
+            total_tns += true_neg
             total_fns += false_neg
+            correct_slots += matches
+            total_slots += all_class
+            
             joint_goal_acc_sum += joint_goal_acc
             avg_goal_acc_sum += goal_acc
 
             batch_loss = loss.sum().item()
 
             summary_batch = {
-                            'total_batch_loss' : batch_loss,
+                            'batch_loss' : batch_loss,
                     }
             summ.append(summary_batch)
             
@@ -97,7 +101,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     
     avg_loss_train = total_loss_train/(num_steps)
     joint_goal_acc = joint_goal_acc_sum/(num_steps)
-    avg_goal_acc  = (total_tps)/(total_tps + total_fns)
+    avg_goal_acc  = correct_slots/total_slots
 
     precision = total_tps/(total_tps + total_fps) if (total_tps + total_fps) != 0 else 0 
     recall = total_tps/(total_tps + total_fns) if (total_tps + total_fns) != 0 else 0 
@@ -191,9 +195,9 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
-    TRAIN_FILE_NAME = 'attraction_hyst_train.pkl'
+    TRAIN_FILE_NAME = 'restaurant_hyst_train.pkl'
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
-    VAL_FILE_NAME = 'attraction_hyst_val.pkl'
+    VAL_FILE_NAME = 'restaurant_hyst_val.pkl'
     #VAL_FILE_NAME = 'single_pt_dataset.pkl'
     TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
 
@@ -231,7 +235,7 @@ if __name__ == '__main__':
     }
 
     training_params = {
-        'num_epochs' : 20,
+        'num_epochs' : 10,
         'learning_rate' : params['learning_rate']
     }
 
@@ -271,7 +275,7 @@ if __name__ == '__main__':
     curr_best_loss = best_results_dict['best_val_loss']
 
     if best_val_loss < curr_best_loss:
-        best_results_dict['best_acc'] = best_val_loss
+        best_results_dict['best_val_loss'] = best_val_loss
         best_results_dict['experiment_name'] = experiment_name
         utils.write_json_file(best_results_dict, json_path)
     
