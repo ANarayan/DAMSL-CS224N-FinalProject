@@ -71,7 +71,7 @@ class DST(nn.Module):
         return context
 
 
-    def forward(self, turn_context, candidate):
+    def feed_forward(self, turn_context, candidate):
         """ Forward pass for a turn/candidate pair
             @param turn_context (Tensor): vector which is a concatenation of encoded utterance
                                     dialogue history, and system actions: # Tensor: (batch_size, 1, context_encoding)
@@ -79,12 +79,17 @@ class DST(nn.Module):
             @returns predicted (Tensor): output vector representing the per slot prediction for
                         each candidate (num_slots x 1)
         """
-        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate, device=self.device) 
+        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate) 
         embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2) 
         feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
-        #print(feed_forward_input.size())
         output = self.classification_net(feed_forward_input)
         return output
+
+    def forward(self, turn_and_cand):
+        context_vectors = torch.stack([self.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
+        candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
+        output = self.feed_forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
+        return output.squeeze(dim=1)
          
 class SentenceBiLSTM(nn.Module): 
     """ BiLSTM used to encode individual user utterances 
@@ -203,36 +208,10 @@ class ClassificationNet(nn.Module):
         output =  self.slot_projection(x_dropout)
         return output
 
-def goal_accuracy(output, labels):
-    """
-    goal accuracy: measures whether for each slot that should be filled), the model predicts the correct output
 
-    @ returns: true positives(int), false positives(int) and false negatives(int)
-    @ returns: joint_goal_accuracy (bool): whether or not all slots correctly filled
-    @ returns: average_slot_accuracy (float):  fraction of slots for which the model predicts the correct slot value. 
-
-    """
+def get_slot_predictions(output):
     sigmoid_output = F.sigmoid(output)
     predicted_ouputs = torch.round(sigmoid_output)
-    true_positives = 0
-    false_positives = 0
-    true_negatives = 0
-    false_negatives = 0
+    return predicted_ouputs
 
-    #print(labels)
-    #print(type(labels))
-
-    if labels.sum().item() > 0:
-        true_positives = ((predicted_ouputs == 1) == (labels == 1)).sum().item()
-        false_positives = ((predicted_ouputs == 1) == (labels != 1)).sum().item()
-        false_negatives = ((predicted_ouputs != 1) == (labels == 1)).sum().item()
-        true_negatives = ((predicted_ouputs != 1) == (labels != 1)).sum().item()
-
-    total_slots = labels.numel()
-    total_matches = (predicted_ouputs == labels).sum().item()
-    joint_goal_accuracy = (true_positives == (true_positives + false_negatives))
-    average_slot_accuracy = (total_matches/labels.numel()) 
-    
-    return true_positives, false_positives, true_negatives, false_negatives, joint_goal_accuracy, average_slot_accuracy, total_matches, total_slots
-        
 

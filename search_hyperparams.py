@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     
     param_grid = { 
-                'learning_rate' : [.0001, .001],
+                'learning_rate' : [.0001, .001, .01, .1, 1],
                 'model_prop' : [1, 1/2, 1/4, 1/8, 1/16, 1/32],
                 'batch_size' : [4, 8, 16, 32, 64, 128],
                 'ff_dropout_prob' : [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6],

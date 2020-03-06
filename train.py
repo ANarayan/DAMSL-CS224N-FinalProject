@@ -13,7 +13,6 @@ from tqdm import trange
 import utils 
 from model.DSTModel import DST
 from model.data_loader import DialoguesDataset
-from model.DSTModel import goal_accuracy
 from evaluate import evaluate
 from torch.utils.data import Dataset, DataLoader
 #from torch.utils.tensorboard import SummaryWriter
@@ -34,15 +33,11 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
 
     model.train()
 
-    batch_size = dataset_params['batch_size']
-    training_generator = training_data.data_iterator(batch_size=dataset_params['batch_size'], shuffle=True)
+    batch_size = dataset_params['train_batch_size']
+    training_generator = training_data.data_iterator(batch_size=dataset_params['train_batch_size'], shuffle=True, is_train=True)
 
     summ = []
-    num_of_slots = 35
     total_loss_train = 0
-    total_tps, total_fps, total_tns, total_fns, correct_slots, total_slots = 0, 0, 0, 0, 0,0
-    joint_goal_acc_sum = 0
-    avg_goal_acc_sum = 0
 
     num_steps = training_data.__len__() // batch_size
         
@@ -51,15 +46,11 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     for i in t:
         try:
             turn_and_cand, cand_label = next(training_generator)
-            context_vectors = torch.stack([model.get_turncontext(cand_dict) for cand_dict in turn_and_cand])
-            candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
-            output = model.forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
+            output = model.forward(turn_and_cand) # Tensor: (batch_size, 1, embed_size)
             output = output.squeeze(dim=1).cpu()
 
             # need to weight loss due to the imbalance in positive to negative examples 
-            # Confirm the 300
-            weights = [20.0] * num_of_slots
-            pos_weights = torch.tensor(weights)
+            pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, cand_label) # Tensor: (batch_size, #_of_slots=35)
 
@@ -70,19 +61,6 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
 
             # perform update
             optimizer.step()
-
-            # generate summary statistics
-            true_pos, false_pos, true_neg, false_neg, joint_goal_acc, goal_acc, matches, all_class = goal_accuracy(output, cand_label)
-            # goal accuracy a.k.a precision
-            total_tps += true_pos
-            total_fps += false_pos
-            total_tns += true_neg
-            total_fns += false_neg
-            correct_slots += matches
-            total_slots += all_class
-            
-            joint_goal_acc_sum += joint_goal_acc
-            avg_goal_acc_sum += goal_acc
 
             batch_loss = loss.sum().item()
 
@@ -100,21 +78,14 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
 
     
     avg_loss_train = total_loss_train/(num_steps)
-    joint_goal_acc = joint_goal_acc_sum/(num_steps)
-    avg_goal_acc  = correct_slots/total_slots
-
-    precision = total_tps/(total_tps + total_fps) if (total_tps + total_fps) != 0 else 0 
-    recall = total_tps/(total_tps + total_fns) if (total_tps + total_fns) != 0 else 0 
-    f1 = 2 * (precision * recall)/(precision + recall) if precision != 0 and recall != 0 else 0
+ 
     
     metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]} 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Train metrics : " + metrics_string)
     logging.info("Average Training loss: {}".format(avg_loss_train))
-    logging.info("Train Precision: {}; Recall: {}; F1: {}".format(precision, recall, f1)) 
-    logging.info("Joint goal accuracy: {}".format(joint_goal_acc))
-    logging.info("Average goal accuracy: {}".format(avg_goal_acc)) 
-    return total_loss_train, avg_goal_acc, joint_goal_acc
+
+    return total_loss_train, avg_loss_train
 
 
 def train_and_eval(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params, device):
@@ -130,10 +101,10 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         logging.info("Epoch {}/{}".format(epoch+1,total_epochs))
         
         # Train model
-        total_loss_train, train_avg_goal_acc, train_joint_goal_acc = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
+        #total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
 
         # Evaluate model
-        eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc = evaluate(model, validation_data, model_dir, dataset_params, device)
+        eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(model, validation_data, model_dir, dataset_params, device)
 
         """
         Accuracy to do HP tuning:
@@ -174,15 +145,13 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         eval_writer.add_scalar('loss', total_loss_eval, epoch)
         train_writer.add_scalar('loss', total_loss_train, epoch)
 
-        # plot avg. slot accuracy
-        eval_writer.add_scalar('average_goal_accuracy', train_avg_goal_acc, epoch)
-        train_writer.add_scalar('average_goal_accuracy', eval_avg_goal_acc, epoch)
+        # plot avg. slot accuracy, joint goal accuracy and slot precision
+        eval_writer.add_scalar('average_goal_accuracy', eval_avg_goal_acc, epoch)
+        eval_writer.add_scalar('joint_goal_accuracy', eval_joint_goal_acc, epoch)
+        eval_writer.add_scalar('avg_slot_precision', avg_slot_precision, epoch)
 
-        """# plot joint slot accuracy
-        eval_writer.add_scalar('joint_goal_accuracy', train_joint_goal_acc, epoch)
-        train_writer.add_scalar('joint_goal_accuracy', eval_joint_goal_acc, epoch)"""
 
-        # TODO: Need to implement early stopping: if acc. decreases for two consecutive epochs, stop training
+        # Early stopping --> loss increases for greater than 2 epochs, stop
         if val_loss >= prev_val_loss:
             early_stopping_count += 1
             if early_stopping_count >= 3:
@@ -195,9 +164,9 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
-    TRAIN_FILE_NAME = 'restaurant_hyst_train.pkl'
+    TRAIN_FILE_NAME = 'attraction_hyst_train_wslot.pkl'
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
-    VAL_FILE_NAME = 'restaurant_hyst_val.pkl'
+    VAL_FILE_NAME = 'attraction_hyst_val_wslot.pkl'
     #VAL_FILE_NAME = 'single_pt_dataset.pkl'
     TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
 
@@ -236,13 +205,16 @@ if __name__ == '__main__':
 
     training_params = {
         'num_epochs' : 10,
-        'learning_rate' : params['learning_rate']
+        'learning_rate' : params['learning_rate'],
+        'pos_weighting' : 20
     }
 
     dataset_params = {
-        'batch_size': params['batch_size'],
+        'train_batch_size': params['batch_size'],
+        'eval_batch_size' : 1,
         'shuffle': True,
-        'num_workers': 1
+        'num_workers': 1,
+        'num_of_slots' : 35
     }
 
     utils.set_logger(os.path.join(args.model_dir, 'train.log'))
