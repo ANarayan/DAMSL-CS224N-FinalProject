@@ -18,7 +18,7 @@ class DialoguesDataset(Dataset):
             data_file (string): Path to pickle file with turn+candidate pairs.
         """
         dialogue_data = open(data_file, 'rb') 
-        self.turn_cand_dps= pickle.load(dialogue_data)[0:284800] # need to make sure it divisible by all batch sizes
+        self.turn_cand_dps= pickle.load(dialogue_data) # need to make sure it divisible by all batch sizes
      
     def __len__(self):
         return len(self.turn_cand_dps)
@@ -40,32 +40,45 @@ class DialoguesDataset(Dataset):
         """
         turn_cand_dict = self.turn_cand_dps[turn_idx]
 
-        # get label and convert to tensor
-        label = torch.Tensor(turn_cand_dict['gt_label'])
+        """# get label and convert to tensor
+        if is_train:
+            label = torch.Tensor(turn_cand_dict['gt_label'])
+        else:"""
 
         # returns turn information and gt labels associated with each candidate for in the turn
         return turn_cand_dict
 
-    def data_iterator(self, batch_size=1, shuffle=False):
+    def data_iterator(self, batch_size=1, shuffle=False, is_train=True):
         # print(batch_size)
         order = list(range(self.__len__()))
         if shuffle:
             random.seed(230)
             random.shuffle(order)
         
-        # take one pass over data in the dataset
-        for i in range(self.__len__() // batch_size):
-            batch_datapoints = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
-            batch_labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+        # if is_train, data points are in the format (cand, turn context)
+        if is_train:
+            # take one pass over data in the dataset
+            for i in range(self.__len__() // batch_size):
+                batch_datapoints = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
+                batch_labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
 
-            batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
+                batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
 
-            if torch.cuda.is_available():
-                batch_data, batch_labels = batch_data.cuda(), batch_labels.cuda()
-            
-            #print(batch_data.type)
+                yield batch_data, batch_labels
 
-            yield batch_data, batch_labels
+        # else, if it is the validation and test set, each data point is one entire turn
+        else:
+            # Note: batch_size = 1 for validation and test
+            # take one pass over data in the dataset
+            for i in range(self.__len__() // batch_size):
+                batch_turns = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
+                batch_labels = [torch.Tensor(turn['gt_labels']) for turn in batch_turns]
+
+                # batch_data: turn context, batch_labels: gt_annotation for each candidate in the turn
+                batch_data, batch_labels = batch_turns[0], batch_labels[0]
+
+                yield batch_data, batch_labels
+
 
 #TODO: if time, write a batch loader for tasks/domains, to make maml extensible
 # to many domains by not having to load all their data into memory simultaneously

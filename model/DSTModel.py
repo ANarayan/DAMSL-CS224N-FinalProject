@@ -15,7 +15,7 @@ class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
     def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
-                ff_hidden_dim, batch_size, num_slots, ngrams, candidate_utterance_vocab_pth, da_vocab_pth):
+                ff_hidden_dim, ff_dropout_prob, batch_size, num_slots, ngrams, candidate_utterance_vocab_pth, da_vocab_pth, device):
         super(DST, self).__init__()
 
         # instantiate candidate_embedding
@@ -31,7 +31,8 @@ class DST(nn.Module):
         # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
         #                                               A_i = system actions, C_ij = candidate encoding
         self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
-        self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots)
+        self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots, ff_dropout_prob)
+        self.device = device
 
     def get_turncontext(self, turn):
         """ Compute turn context -- dependent on user utterance, system dialogue acts, 
@@ -48,17 +49,17 @@ class DST(nn.Module):
         #To optimize with pack_padded_sequence in self.sentence_encoder, if necessary
         utterances_lengths = [len(utt) for utt in past_utterances]
         
-        utt_idxs = self.candidate_utterance_vocab.to_idxs_tensor(past_utterances)
+        utt_idxs = self.candidate_utterance_vocab.to_idxs_tensor(past_utterances, device=self.device)
         #utt_idxs_packed = pack_padded_sequence(utt_idxs, utterances_lengths)
         encoded_past_utterances = self.sentence_encoder(utt_idxs)
         
         # get encoded user utterance for the current turn
         # self.system_dialogue_acts(da_idxs) returns ((1,512))
         utterance_enc = torch.index_select(encoded_past_utterances, 0, torch.tensor([len(encoded_past_utterances)
-            - 1]))
+            - 1], device=self.device))
 
         #system_dialogue_acts = List(Strings)
-        da_idxs = self.da_vocab.to_idxs_tensor(system_dialogue_acts, isDialogueVocab=True)
+        da_idxs = self.da_vocab.to_idxs_tensor(system_dialogue_acts, isDialogueVocab=True, device=self.device)
         # self.system_dialogue_acts(da_idxs) returns ((1,1,64))
         dialogue_acts_enc = self.system_dialogue_acts(da_idxs).squeeze(dim=0)
 
@@ -78,10 +79,9 @@ class DST(nn.Module):
             @returns predicted (Tensor): output vector representing the per slot prediction for
                         each candidate (num_slots x 1)
         """
-        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate) 
+        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate).cuda() 
         embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2) 
         feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
-        #print(feed_forward_input.size())
         output = self.classification_net(feed_forward_input)
         return output
 
@@ -90,7 +90,7 @@ class DST(nn.Module):
         candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
         output = self.feed_forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
         return output.squeeze(dim=1)
-
+         
 class SentenceBiLSTM(nn.Module): 
     """ BiLSTM used to encode individual user utterances 
     """
@@ -183,7 +183,7 @@ class ClassificationNet(nn.Module):
     """
         Feed-forward network used to determine whether a candidate fills a given slot
     """
-    def __init__(self, context_dim, hidden_dim, num_slots):
+    def __init__(self, context_dim, hidden_dim, num_slots, dropout_prob):
         """ Init SentenceBiLSTM
 
         @param context_dim (int): Embedding size (dimensionality)
@@ -197,20 +197,21 @@ class ClassificationNet(nn.Module):
         # FC linear layer: input: context feature vector concatentated with candidate
         #                  outut: vector of dimensions fc_dim
         self.fc1 = nn.Linear(self.context_feature_dim, self.fc_dim)
+        self.dropout = nn.Dropout(dropout_prob)
 
         # Projection matrix: Projection weight matrix of size (fc_dim x num_slots)
         self.slot_projection = nn.Linear(self.fc_dim, self.num_slots, bias=False)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        output =  self.slot_projection(x)
+        x_dropout = self.dropout(x)
+        output =  self.slot_projection(x_dropout)
         return output
 
-def goal_accuracy_metric(output, labels):
+
+def get_slot_predictions(output):
     sigmoid_output = F.sigmoid(output)
     predicted_ouputs = torch.round(sigmoid_output)
-    accuracy = (predicted_ouputs == labels).float().sum()/(labels.size(0) * labels.size(1))
-    return accuracy
+    return predicted_ouputs
 
-        
 

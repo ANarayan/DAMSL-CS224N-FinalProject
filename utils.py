@@ -10,6 +10,9 @@ def read_json_file(file_path):
         params = json.load(file)
     return params
 
+def write_json_file(output, file_path):
+    with open(file_path, 'w') as file:
+        json.dump(output,file)
 
 def set_logger(log_path):
     """ Set up logger to store training info
@@ -54,3 +57,12 @@ def save_checkpoint(state, checkpoint, is_best):
 
     if is_best:
         shutil.copyfile(filepath, os.path.join(checkpoint, 'best.pth.tar'))
+
+def load_checkpoint(checkpoint, model, optimizer=None):
+    if not os.path.exists(checkpoint):
+        raise ("File doesn't exist {}".format(checkpoint))
+    checkpoint = torch.load(checkpoint)
+    model.load_state_dict(checkpoint['state_dict'])
+    if optimizer: 
+        optimizer.load_state_dict(checkpoint['optim_dict'])
+    return checkpoint

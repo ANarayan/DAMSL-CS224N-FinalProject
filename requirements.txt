@@ -1,0 +1,4 @@
+nltk
+tqdm==4.29.1
+pickle
+random
