@@ -14,8 +14,8 @@ from utils import pad
 #Default dir 'formatted_data' in the parent dir of repo
 DATA_DIR = Path.cwd() / 'formatted_data'
 
-DOMAINS = ['attraction','hospital', 'hotel', 'police', 'restaurant', 'taxi', 'train'] 
-
+#DOMAINS = ['attraction','hospital', 'hotel', 'police', 'restaurant', 'taxi', 'train'] 
+DOMAINS = ['hotel', 'restaurant', 'taxi', 'train']
 #Special vocab tokens
 PAD = '<pad>'
 EOS = '</s>'
@@ -73,8 +73,7 @@ class Vocab():
     def new_from_domains(self, domains=DOMAINS, data_dir=DATA_DIR):
         """New Vocab from pickled formatted training data"""
         for d in domains:
-            self.update_from_pkl(Path(data_dir) / '{}_dials_hyst.pkl'.format(d), 'pkl')
-
+            self.update_from_pkl(Path(data_dir) / '{}_dials_hyst_trainset.pkl'.format(d), 'pkl')
 
     def fill_special_toks(self):
         for i, sptok in enumerate(SPECIAL_TOKS):
@@ -103,12 +102,9 @@ class Vocab():
             dials = json.load(open(pth, 'r'))
         for dial in dials:
             for turn in dial['dialogue'].keys():
-                toks = word_tokenize(dial['dialogue'][turn].get('user_utterance', ''))
-                candidates = [ut for ut in dial['dialogue'][turn].get('user_utterance','').split() if ut.isalpha()]
-                if self.ngrams > 1:
-                    toks = ngrams(toks, self.ngrams)
-                    toks = [' '.join(tok) for tok in toks]
-                    candidates = ngrams(candidates)
+                toks =  dial['dialogue'][turn]['user_utterance'] 
+                candidates = dial['dialogue'][turn]['candidates']
+
                 for t in toks + candidates:
                     i = self.update(t, i)
         

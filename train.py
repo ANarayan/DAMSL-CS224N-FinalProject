@@ -101,7 +101,7 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         logging.info("Epoch {}/{}".format(epoch+1,total_epochs))
         
         # Train model
-        #total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
+        total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
 
         # Evaluate model
         eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(model, validation_data, model_dir, dataset_params, device)
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
     VAL_FILE_NAME = 'attraction_hyst_val_wslot.pkl'
     #VAL_FILE_NAME = 'single_pt_dataset.pkl'
-    TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
+    TEST_FILE_NAME = 'attraction_hyst_test_wslot.pkl'
 
     # first load parameters from params.json
     args = parser.parse_args()
@@ -178,9 +178,9 @@ if __name__ == '__main__':
     eval_writer = SummaryWriter(comment = "_eval" + experiment_name )
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    # Load in candidate vocab
+    """# Load in candidate vocab
     with open('vocab.json') as cand_vocab:
-        candidate_vocabulary = json.load(cand_vocab)['1']
+        candidate_vocabulary = json.load(cand_vocab)['1']"""
 
     json_path = os.path.join('experiments/', 'params.json')
     assert os.path.isfile(json_path), "No json config file gound at {}".format(json_path)
@@ -197,8 +197,8 @@ if __name__ == '__main__':
         'ff_dropout_prob' : params[ 'ff_dropout_prob'],
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
-        'ngrams' : ['1', '2'],
-        'candidate_utterance_vocab_pth' : 'vocab.json',
+        'ngrams' : ['3'],
+        'candidate_utterance_vocab_pth' : 'attraction_vocab.json',
         'da_vocab_pth': 'davocab.json',
         'device' : device
     }
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     training_params = {
         'num_epochs' : 10,
         'learning_rate' : params['learning_rate'],
-        'pos_weighting' : 20
+        'pos_weighting' : 20.0
     }
 
     dataset_params = {
