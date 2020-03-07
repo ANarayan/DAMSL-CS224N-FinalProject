@@ -18,6 +18,12 @@ from tqdm import trange
 import torch.nn.functional as F
 import torch.nn as nn
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--data_dir', default='./data')
+parser.add_argument('--data_filename')
+parser.add_argument('--model_dir', default='./experiments')
+parser.add_argument('--model_checkpoint_name', default='best.pth.tar')
 
 def get_filled_slot_dict(candidates, slot_predictions):
     """ get_filled_slot_dict: returns a dictionary representing slot predictions by the model
@@ -79,12 +85,12 @@ def calc_slot_accuracy(predicted_slot_dict, gt_slot_dict, num_of_slots):
             fn += 1
 
     # of the total slots = 35, how many were correctly predicted
-    slot_accuracy = (num_of_slots - fp)/num_of_slots
+    slot_accuracy = (num_of_slots - fp - fn)/num_of_slots
     slot_precision = tp / (tp + fp) if (tp + fp) != 0 else 0
     slot_recall = tp / (tp + fn) if ((tp + fn)) != 0 else 0
     slot_f1 = 2 * (slot_precision * slot_recall) / (slot_precision + slot_recall) if (slot_precision + slot_recall) != 0 else 0
     # joing goal accuracy: measures whether all slots are predicted correctly
-    joint_goal_acc = 1 if (tp + fp) == total_gt_slots else 0
+    joint_goal_acc = 1 if (gt_slot_dict == predicted_slot_dict) else 0
 
     return slot_accuracy, joint_goal_acc, slot_precision, slot_recall, slot_f1
 
@@ -188,4 +194,72 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     logging.info("Average slot precision: {}".format(avg_slot_precision))
 
     return metrics_mean, total_loss_eval, avg_goal_acc, joint_goal_acc, avg_slot_precision
+
+if __name__ == '__main__':
+    
+    args = parser.parse_args()
+    
+    # device
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    # load in evaluation data
+    data_path = os.path.join(args.data_dir, args.data_filename)
+    print(data_path)
+    assert os.path.isfile(data_path)
+    evaluation_data = DialoguesDataset(data_path)
+
+    # model param file
+    param_path = os.path.join(args.model_dir, 'params.json')
+    assert os.path.isfile(param_path)
+    params = utils.read_json_file(param_path)
+
+    model_params = {
+        'embed_dim' : 300,
+        'sentence_hidden_dim' : params['sentence_hidden_dim'],
+        'hierarchial_hidden_dim' : params['hierarchial_hidden_dim'],
+        'da_hidden_dim' : params[ 'da_hidden_dim'],
+        'da_embed_size' : 50,
+        'ff_hidden_dim' : params['ff_hidden_dim'], 
+        'ff_dropout_prob' : params[ 'ff_dropout_prob'],
+        'batch_size' : params['batch_size'],
+        'num_slots' : 35,
+        'ngrams' : ['3'],
+        'candidate_utterance_vocab_pth' : 'attraction_vocab.json',
+        'da_vocab_pth': 'davocab.json',
+        'device' : device
+    }
+
+    training_params = {
+        'num_epochs' : 10,
+        'learning_rate' : params['learning_rate'],
+        'pos_weighting' : 20.0
+    }
+
+    dataset_params = {
+        'train_batch_size': params['batch_size'],
+        'eval_batch_size' : 1,
+        'shuffle': True,
+        'num_workers': 1,
+        'num_of_slots' : 35
+
+    }
+    # model
+    if torch.cuda.is_available():
+        model = DST(**model_params).cuda()
+    else:
+        model = DST(**model_params)
+    
+    utils.set_logger(os.path.join(args.model_dir, 'eval.log'))
+
+    logging.info('Starting evalutation')
+
+    utils.load_checkpoint(os.path.join(args.model_dir, args.model_checkpoint_name), model)
+
+    eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(model, evaluation_data, args.model_dir, dataset_params, device)
+
+    save_path = os.path.join(args.model_dir, "metrics_test.json")
+    utils.save_to_json(eval_metrics, save_path)
+
+
+
 

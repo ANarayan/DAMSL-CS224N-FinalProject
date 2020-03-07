@@ -57,3 +57,12 @@ def save_checkpoint(state, checkpoint, is_best):
 
     if is_best:
         shutil.copyfile(filepath, os.path.join(checkpoint, 'best.pth.tar'))
+
+def load_checkpoint(checkpoint, model, optimizer=None):
+    if not os.path.exists(checkpoint):
+        raise ("File doesn't exist {}".format(checkpoint))
+    checkpoint = torch.load(checkpoint)
+    model.load_state_dict(checkpoint['state_dict'])
+    if optimizer: 
+        optimizer.load_state_dict(checkpoint['optim_dict'])
+    return checkpoint
