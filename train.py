@@ -154,7 +154,7 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         # Early stopping --> loss increases for greater than 2 epochs, stop
         if val_loss >= prev_val_loss:
             early_stopping_count += 1
-            if early_stopping_count >= 3:
+            if early_stopping_count >=2:
                 break
 
         prev_val_loss = val_loss
@@ -164,11 +164,13 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
-    TRAIN_FILE_NAME = 'attraction_hyst_train_wslot.pkl'
+    MODEL_CHECKPOINT = True
+
+    TRAIN_FILE_NAME = 'mst_attraction_train.pkl'
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
-    VAL_FILE_NAME = 'attraction_hyst_val_wslot.pkl'
+    VAL_FILE_NAME = 'mst_attraction_val.pkl'
     #VAL_FILE_NAME = 'single_pt_dataset.pkl'
-    TEST_FILE_NAME = 'attraction_hyst_test_wslot.pkl'
+    TEST_FILE_NAME = 'mst_attraction_test.pkl'
 
     # first load parameters from params.json
     args = parser.parse_args()
@@ -182,7 +184,7 @@ if __name__ == '__main__':
     with open('vocab.json') as cand_vocab:
         candidate_vocabulary = json.load(cand_vocab)['1']"""
 
-    json_path = os.path.join('experiments/', 'params.json')
+    json_path = os.path.join(args.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json config file gound at {}".format(json_path)
     params = utils.read_json_file(json_path)
         
@@ -198,13 +200,13 @@ if __name__ == '__main__':
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
         'ngrams' : ['3'],
-        'candidate_utterance_vocab_pth' : 'attraction_vocab.json',
-        'da_vocab_pth': 'davocab.json',
+        'canzdidate_utterance_vocab_pth' : 'mst_attraction_vocab.json',
+        'da_vocab_pth': 'mst_attraction_davocab.json',
         'device' : device
     }
 
     training_params = {
-        'num_epochs' : 10,
+        'num_epochs' : 20,
         'learning_rate' : params['learning_rate'],
         'pos_weighting' : 20.0
     }
@@ -217,12 +219,14 @@ if __name__ == '__main__':
         'num_of_slots' : 35
     }
 
-    utils.set_logger(os.path.join(args.model_dir, 'train.log'))
+    #utils.set_logger(os.path.join(args.model_dir, 'train.log'))
+    utils.set_logger(os.path.join(args.model_dir, 'train-cont.log'))
     logging.info("Loading the datasets...")
 
     # Load data
     training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME))
     validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME))
+    test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME))
 
     logging.info("-done")
 
@@ -232,14 +236,20 @@ if __name__ == '__main__':
     else:
         model = DST(**model_params)
 
+    if MODEL_CHECKPOINT:
+        utils.load_checkpoint(os.path.join(args.model_dir, 'best.pth.tar'), model)
+    
     optimizer = optim.Adam(model.parameters(), lr=training_params['learning_rate'])
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(training_params['num_epochs']))
 
     best_val_loss = train_and_eval(model, training_data, validation_data, optimizer, args.model_dir, training_params, dataset_params, device)
+    
+    """
     # TODO: Need to update which of the current parameter configurations yielded the best results! Read in file, compare best va;
     # acc with current accuracy and replace or dont replace.
+    
 
     # Update which model config yielded the best results
     json_path = os.path.join('experiments/', 'best_config.json')
@@ -251,6 +261,11 @@ if __name__ == '__main__':
         best_results_dict['experiment_name'] = experiment_name
         utils.write_json_file(best_results_dict, json_path)
     
-
+    """
+    test_model = DST(**model_params).cuda()
+    utils.load_checkpoint(os.path.join(args.model_dir, 'best.pth.tar'), test_model)
+    # Run on test data
+    logging.info("TEST SET METRICS ----------------  : ")
+    eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(test_model, test_data, args.model_dir, dataset_params, device)
     train_writer.close()
     eval_writer.close()

@@ -79,7 +79,7 @@ class DST(nn.Module):
             @returns predicted (Tensor): output vector representing the per slot prediction for
                         each candidate (num_slots x 1)
         """
-        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate) 
+        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate).cuda() 
         embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2) 
         feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
         output = self.classification_net(feed_forward_input)
