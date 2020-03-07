@@ -65,6 +65,7 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
         
         task_test_losses_before_update = []
         task_test_losses_after_update = []
+        task_test_outputs = []
 
         #Sample batch
         batch_of_tasks = random.sample(generators, meta_training_params['meta_outer_batch_size'])
@@ -78,12 +79,10 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
                     break
                 else:
                     continue
-            model.eval()
             output_test = model(turn_and_cand_test)
             task_test_loss_before_update = loss_func(output_test, cand_label_test).sum()
             task_test_losses_before_update.append(task_test_loss_before_update.item())
             
-            model.train()
             output_train = model(turn_and_cand_train)
             task_train_loss = loss_func(output_train, cand_label_train).sum()
 
@@ -91,8 +90,8 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
             task_train_loss.backward()
             optimizer.step()
 
-            model.eval()
             output_test = model(turn_and_cand_test)
+            task_test_outputs.append(output_test)
             task_test_loss_after_update = loss_func(output_test, cand_label_test).sum()
             task_test_losses_after_update.append(task_test_loss_after_update.item())
             
@@ -105,7 +104,6 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
         #Meta update
         
         meta_batch_loss /= meta_batch_size
-        model.train()
         meta_optimizer.zero_grad()
         meta_batch_loss.backward()
         meta_optimizer.step()
