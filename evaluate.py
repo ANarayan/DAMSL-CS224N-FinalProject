@@ -210,6 +210,7 @@ if __name__ == '__main__':
 
     # model param file
     param_path = os.path.join(args.model_dir, 'params.json')
+    print(param_path)
     assert os.path.isfile(param_path)
     params = utils.read_json_file(param_path)
 
@@ -224,8 +225,8 @@ if __name__ == '__main__':
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
         'ngrams' : ['3'],
-        'candidate_utterance_vocab_pth' : 'attraction_vocab.json',
-        'da_vocab_pth': 'davocab.json',
+        'candidate_utterance_vocab_pth' : 'mst_attraction_vocab.json',
+        'da_vocab_pth': 'mst_attraction_davocab.json',
         'device' : device
     }
 
