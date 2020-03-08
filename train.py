@@ -43,28 +43,19 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     total_loss_train = 0
 
     num_steps = training_data.__len__() // batch_size
-    pos_weights = torch.tensor([training_params['pos_weighting']] * num_of_slots)
-    loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
         
     t = trange(num_steps)
 
     for i in t:
         try:
             turn_and_cand, cand_label = next(training_generator)
-<<<<<<< HEAD
             output = model.forward(turn_and_cand) # Tensor: (batch_size, 1, embed_size)
             output = output.squeeze(dim=1).cpu()
 
             # need to weight loss due to the imbalance in positive to negative examples 
             pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
-=======
-            output = model(turn_and_cand)
-            # need to weight loss due to the imbalance in positive to negative examples 
-            # Confirm the 300
->>>>>>> master
             loss = loss_func(output, cand_label) # Tensor: (batch_size, #_of_slots=35)
-
 
             # clear prev. gradients, compute gradients of all variables wrt loss
             optimizer.zero_grad()

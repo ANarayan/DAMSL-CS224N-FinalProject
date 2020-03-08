@@ -12,12 +12,21 @@ warnings.filterwarnings("ignore")
 
 class DialoguesDataset(Dataset):
     """ Dialogues dataset """
-    def __init__(self, data_file):
+    def __init__(self, data_file, dataset_percentage=1):
         """
         Args:
             data_file (string): Path to pickle file with turn+candidate pairs.
         """
         dialogue_data = open(data_file, 'rb') 
+        
+        # Randomly shuffle dataset
+        random.seed(30)
+        random.shuffle(dialogue_data)
+
+        # For the purposes of testing (i.e. fine-tuning), use only a subset of datset examples
+        dataset_split_idx = dataset_percentage * len(dialogue_data)
+        dialogue_data = dialogue_data[:dataset_split_idx] 
+
         self.turn_cand_dps= pickle.load(dialogue_data) # need to make sure it divisible by all batch sizes
      
     def __len__(self):
