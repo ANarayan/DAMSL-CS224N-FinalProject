@@ -6,3 +6,4 @@ data/*
 experiments/*
 runs/*
 model/*
+domain_pos_weight.json
