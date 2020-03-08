@@ -117,6 +117,8 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
 
     num_of_steps = evaluation_data.__len__() // batch_size
 
+    pos_weights = torch.tensor([training_params['pos_weighting']] * num_of_slots)
+    loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
     # summary for current eval loop
     summ = []
 
