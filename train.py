@@ -30,6 +30,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--data_dir', default='data/', help='Directory which contain the dialogue dataset')
 parser.add_argument('--model_dir', default='experiments/', help="Directory containing model config file")
+parser.add_argument('--output_model_dir', default='experiments/', help="Directory for saving training logs + model outputs")
+parser.add_argument('--fine_tune_domain', default=None, help='Domain to finetune on')
 
 def train(model, training_data, optimizer, model_dir, training_params, dataset_params, device):
     """ Trains over the entire training data set """
@@ -53,7 +55,11 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
             output = output.squeeze(dim=1).cpu()
 
             # need to weight loss due to the imbalance in positive to negative examples 
-            pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
+            if training_params['pos_weighting'] is not None:
+                pos_weights = training_params['pos_weighting']
+            else:
+                pos_weights = torch.tensor([1.0] * training_params['num_slots'])
+
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, cand_label) # Tensor: (batch_size, #_of_slots=35)
 
@@ -182,11 +188,20 @@ if __name__ == '__main__':
     eval_writer = SummaryWriter(comment = "_eval" + experiment_name )
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    json_path = os.path.join(args.model_dir, 'params.json')
-    assert os.path.isfile(json_path), "No json config file gound at {}".format(json_path)
-    params = utils.read_json_file(json_path)
-        
+    params_json_path = os.path.join(args.model_dir, 'params.json')
+    assert os.path.isfile(params_json_path), "No json config file found at {}".format(params_json_path)
+    params = utils.read_json_file(params_json_path)
 
+    # get positive weightage
+    if args.fine_tune_domain is not None:
+        weightage_path = os.path.join(args.model_dir, 'domain_pos_weights.json')
+        assert os.path.isfile(weightage_path), "No json config file found at {}".format(weightage_path)
+        weights_dict = utils.read_json_file(weightage_path)
+        pos_weights = weights_dict[args.fine_tune_domain]
+    else:
+        pos_weights = None
+    
+    
     model_params = {
         'embed_dim' : 300, 
         'sentence_hidden_dim' : params['sentence_hidden_dim'], 
@@ -206,7 +221,8 @@ if __name__ == '__main__':
     training_params = {
         'num_epochs' : 20,
         'learning_rate' : params['learning_rate'],
-        'pos_weighting' : 20.0
+        'pos_weighting' : pos_weights,
+        'train_set_percentage' : 1, # used for fine-tuning experiments
     }
 
     dataset_params = {
@@ -217,12 +233,11 @@ if __name__ == '__main__':
         'num_of_slots' : 35
     }
 
-    #utils.set_logger(os.path.join(args.model_dir, 'train.log'))
-    utils.set_logger(os.path.join(args.model_dir, 'train-cont.log'))
+    utils.set_logger(os.path.join(args.ouput_model_dir, 'train.log'))
     logging.info("Loading the datasets...")
 
     # Load data
-    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME))
+    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), training_params['train_set_percentage'])
     validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME))
     test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME))
 
@@ -261,9 +276,9 @@ if __name__ == '__main__':
     
     """
     test_model = DST(**model_params).cuda()
-    utils.load_checkpoint(os.path.join(args.model_dir, 'best.pth.tar'), test_model)
+    utils.load_checkpoint(os.path.join(args.output_model_dir, 'best.pth.tar'), test_model)
     # Run on test data
     logging.info("TEST SET METRICS ----------------  : ")
-    eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(test_model, test_data, args.model_dir, dataset_params, device)
+    eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(test_model, test_data, args.output_model_dir, dataset_params, device)
     train_writer.close()
     eval_writer.close()
