@@ -117,7 +117,8 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
 
     num_of_steps = evaluation_data.__len__() // batch_size
 
-    pos_weights = torch.tensor([training_params['pos_weighting']] * num_of_slots)
+    # no loss weightage in eval step
+    pos_weights = torch.tensor([1.0] * num_of_slots)
     loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
     # summary for current eval loop
     summ = []
@@ -212,6 +213,7 @@ if __name__ == '__main__':
 
     # model param file
     param_path = os.path.join(args.model_dir, 'params.json')
+    print(param_path)
     assert os.path.isfile(param_path)
     params = utils.read_json_file(param_path)
 
@@ -226,8 +228,8 @@ if __name__ == '__main__':
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
         'ngrams' : ['3'],
-        'candidate_utterance_vocab_pth' : 'attraction_vocab.json',
-        'da_vocab_pth': 'davocab.json',
+        'candidate_utterance_vocab_pth' : 'mst_attraction_vocab.json',
+        'da_vocab_pth': 'mst_attraction_davocab.json',
         'device' : device
     }
 
