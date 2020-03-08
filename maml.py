@@ -8,11 +8,11 @@ from pathlib import Path
 from copy import deepcopy
 
 import torch
-import numpy as np 
+import numpy as np
 import torch.optim as optim
 from tqdm import trange
 
-import utils 
+import utils
 from model.DSTModel import DST
 from model.data_loader import DialoguesDataset
 from model.DSTModel import goal_accuracy_metric
@@ -26,7 +26,7 @@ from torch.utils.tensorboard import SummaryWriter
 def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, meta_optimizer, model_dir, data_dir,
         training_params, dataset_params, meta_training_params, model_params, device):
     """
-    Train on n - 1 domains, eval and test on nth 
+    Train on n - 1 domains, eval and test on nth
 
     Args:
         trainandtest_data_files: dict {domain_name: {train_file_path: fp, test_file_path: fp}
@@ -34,7 +34,7 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
     #TODO: add num grad steps for inner loop hyperparam
 
     # randomly initialize mdoel weights (done by constructing model by default)
-    
+
     # Load training and test sets for n - 1 domains
 
     domain_names = trainandtest_data_files.keys()
@@ -51,18 +51,18 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
     loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
 
     meta_batch_size = meta_training_params['meta_outer_batch_size']
-    
+
     total_meta_loss = 0
 
     #Train
     for meta_epoch in trange(meta_training_params['meta_epochs']):
 
         logging.info('Meta epoch {}...'.format(meta_epoch))
-        
+
         model_pre_metaupdate = deepcopy(model.state_dict())
-        
+
         meta_batch_loss = 0
-        
+
         task_test_losses_before_update = []
         task_test_losses_after_update = []
         task_test_outputs = []
@@ -82,7 +82,7 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
             output_test = model(turn_and_cand_test)
             task_test_loss_before_update = loss_func(output_test, cand_label_test).sum()
             task_test_losses_before_update.append(task_test_loss_before_update.item())
-            
+
             output_train = model(turn_and_cand_train)
             task_train_loss = loss_func(output_train, cand_label_train).sum()
 
@@ -94,15 +94,15 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
             task_test_outputs.append(output_test)
             task_test_loss_after_update = loss_func(output_test, cand_label_test).sum()
             task_test_losses_after_update.append(task_test_loss_after_update.item())
-            
+
             meta_batch_loss += task_test_loss_after_update
 
             #Restore weights to before any task loop updates
-            
+
             model.load_state_dict(model_pre_metaupdate)
-            
+
         #Meta update
-        
+
         meta_batch_loss /= meta_batch_size
         meta_optimizer.zero_grad()
         meta_batch_loss.backward()
@@ -113,8 +113,8 @@ def train_and_eval_maml(model, trainandtest_data_files, eval_data, optimizer, me
 
 
         logging.info('Average inner loss before inner updates : {}'.format(np.mean(task_test_losses_before_update)))
-        logging.info('Average inner loss after inner updates : {}'.format(np.mean(task_test_losses_after_update))) 
-        
+        logging.info('Average inner loss after inner updates : {}'.format(np.mean(task_test_losses_after_update)))
+
 
         #Eval
 
@@ -161,12 +161,12 @@ if __name__ == '__main__':
         domains = params['domains']
     else:
         model_params = {
-            'embed_dim' : 300, 
-            'sentence_hidden_dim' : 256, 
+            'embed_dim' : 300,
+            'sentence_hidden_dim' : 256,
             'hierarchial_hidden_dim' : 512,
-            'da_hidden_dim' : 64, 
+            'da_hidden_dim' : 64,
             'da_embed_size' : 50,
-            'ff_hidden_dim' : 256, 
+            'ff_hidden_dim' : 256,
             'batch_size' : 2,
             'num_slots' : 35,
             'ngrams' : '1',
@@ -196,7 +196,7 @@ if __name__ == '__main__':
             'num_workers': 1
         }
 
-        domains = ['restaurant']   
+        domains = ['restaurant']
 
     utils.set_logger(os.path.join(args.model_dir, 'train.log'))
     logging.info("Loading the datasets...")
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         meta_optimizer = optim.SGD(model.parameters(), lr=meta_training_params['meta_learning_rate'], momentum=0.9)
     elif meta_training_params['meta_optimizer'] == 'Adam':
         meta_optimizer = optim.Adam(model.parameters(), lr=meta_training_params['meta_learning_rate'])
- 
+
 
     # Train the model
     logging.info("Starting MAML for {} meta epoch(s)".format(meta_training_params['meta_epochs']))
