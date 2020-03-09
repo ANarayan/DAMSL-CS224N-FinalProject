@@ -4,7 +4,7 @@ import argparse
 import logging
 import os
 
-import numpy as np 
+import numpy as np
 import torch
 import utils
 
@@ -28,9 +28,9 @@ parser.add_argument('--model_checkpoint_name', default='best.pth.tar')
 def get_filled_slot_dict(candidates, slot_predictions):
     """ get_filled_slot_dict: returns a dictionary representing slot predictions by the model
         @ param candidates (List[String]): list of candidates (strings)
-        @ param slot_prediction (List[Tensor]): List of tensors with output predictions for each slot for 
+        @ param slot_prediction (List[Tensor]): List of tensors with output predictions for each slot for
                                         each cand
-        @ returns slots_to_predval (Dict): dictionary mapping each slot to a candidate (according to 
+        @ returns slots_to_predval (Dict): dictionary mapping each slot to a candidate (according to
                         predictions)
     """
     slots_to_predval = {}
@@ -63,7 +63,7 @@ def calc_slot_accuracy(predicted_slot_dict, gt_slot_dict, num_of_slots):
 
             fp = 2, tp = 1, fn = 1
 
-            slot_accuracy = (num_of_slots - 2) / num_of_slots = 33/35 
+            slot_accuracy = (num_of_slots - 2) / num_of_slots = 33/35
             slot_precision = (tp) / (tp + fp) = 1/3
             slot_recall = tp / (tp + fn)
             join_goal_acc = 1 if tp == len(gt_slot_dict) and fp == 0 else 0
@@ -98,15 +98,15 @@ def calc_slot_accuracy(predicted_slot_dict, gt_slot_dict, num_of_slots):
 def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     """ Evaluates the model over the evaluation data """
 
-    #batch_size = dataset_params['batch_size']
-    batch_size = 1
+    #batch_size = dataset_params['eval_batch_size']
+    batch_size=1
     num_of_slots = dataset_params['num_of_slots']
 
     # set model in evaluation model
     model.eval()
 
     # set up validation_generator --> data iterator wich generates batches for the entire dataset
-    validation_generator = evaluation_data.data_iterator(batch_size=dataset_params['eval_batch_size'], shuffle=False, is_train=False) 
+    validation_generator = evaluation_data.data_iterator(batch_size=batch_size, shuffle=False, is_train=False)
 
     total_loss_eval = 0
     joint_goal_acc_sum = 0
@@ -140,9 +140,6 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             # 1) Compute loss
 
             # need to weightage in evaluation
-            weight = 1.0
-            pos_weights = torch.tensor([weight] * num_of_slots)
-            loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, turn_label)
 
             # 2) Compute summary statistics
@@ -172,8 +169,8 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
                             'slot_f1' : slot_f1
                         }
             summ.append(summary_batch)
-    
-           
+
+
             # add to total loss
             total_loss_eval += batch_loss
 
@@ -186,12 +183,12 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     avg_goal_acc  = avg_goal_acc_sum/(num_of_steps)
     avg_slot_precision = slot_precision_sum/(num_of_steps)
 
-    
-    metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]} 
+
+    metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]}
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    logging.info("Average Evaluation Loss: {}".format(avg_turn_loss))  
-    logging.info("Total eval loss: {}".format(total_loss_eval))  
+    logging.info("Average Evaluation Loss: {}".format(avg_turn_loss))
+    logging.info("Total eval loss: {}".format(total_loss_eval))
     logging.info("Joint goal accuracy: {}".format(joint_goal_acc))
     logging.info("Average goal accuracy: {}".format(avg_goal_acc))
     logging.info("Average slot precision: {}".format(avg_slot_precision))
@@ -199,9 +196,9 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     return metrics_mean, total_loss_eval, avg_goal_acc, joint_goal_acc, avg_slot_precision
 
 if __name__ == '__main__':
-    
+
     args = parser.parse_args()
-    
+
     # device
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -223,7 +220,7 @@ if __name__ == '__main__':
         'hierarchial_hidden_dim' : params['hierarchial_hidden_dim'],
         'da_hidden_dim' : params[ 'da_hidden_dim'],
         'da_embed_size' : 50,
-        'ff_hidden_dim' : params['ff_hidden_dim'], 
+        'ff_hidden_dim' : params['ff_hidden_dim'],
         'ff_dropout_prob' : params[ 'ff_dropout_prob'],
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
@@ -252,7 +249,7 @@ if __name__ == '__main__':
         model = DST(**model_params).cuda()
     else:
         model = DST(**model_params)
-    
+
     utils.set_logger(os.path.join(args.model_dir, 'eval.log'))
 
     logging.info('Starting evalutation')

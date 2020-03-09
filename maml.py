@@ -14,7 +14,7 @@ from tqdm import trange
 
 import utils
 from model.DSTModel import DST
-from model.data_loader import DialoguesDataset
+from model.data_loader import DialoguesDataset, MultiDomainDialoguesDataset
 from evaluate import evaluate
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -34,25 +34,20 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
     Args:
         trainandval_data_files: dict {domain_name: {train_file_path: fp, val_file_path: fp}
     """
-    #TODO: add num grad steps for inner loop hyperparam
 
-    # randomly initialize mdoel weights (done by constructing model by default)
-
-    # Load training and test sets for n - 1 domains
-
-    import pdb;pdb.set_trace()
     domain_names = trainandval_data_files.keys()
     leave_out_domain = [d for d in DOMAINS if d not in domain_names][0]
 
     model_name = 'maml_leaveout_{}'.format(leave_out_domain)
 
 
+    eval_data = MultiDomainDialoguesDataset({'{}_val'.format(d):
+        Path(data_dir) / trainandval_data_files[d]['val_file_path'] for d in domain_names})
+
     tasks_train = [DialoguesDataset(Path(data_dir) / trainandval_data_files[domain]['train_file_path']) for
             domain in domain_names]
     train_generators = [train_dataset.data_iterator(meta_training_params['meta_inner_batch_size'], shuffle=True)
             for train_dataset in tasks_train]
-
-    generators = train_generators
 
     pos_weights = None
     if training_params.get('pos_weighting'):
@@ -77,25 +72,21 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
 
         meta_batch_loss = 0
 
-        meta_test_losses_before_update = []
         meta_test_losses_after_update = []
         meta_test_outputs = []
 
         #Sample batch
-        batch_of_tasks = random.sample(generators, meta_training_params['meta_outer_batch_size'])
+        batch_of_tasks = random.sample(train_generators, meta_training_params['meta_outer_batch_size'])
         for t in batch_of_tasks:
             try:
                 turn_and_cand_train, cand_label_train = next(t)
                 turn_and_cand_test, cand_label_test = next(t)
             except StopIteration:
-                generators.pop(generators.index(t))
-                if not generators:
+                train_generators.pop(train_generators.index(t))
+                if not train_generators:
                     break
                 else:
                     continue
-            output_test = model(turn_and_cand_test)
-            meta_test_loss_before_update = loss_func(output_test, cand_label_test).sum()
-            meta_test_losses_before_update.append(meta_test_loss_before_update.item())
 
             output_train = model(turn_and_cand_train)
             task_train_loss = loss_func(output_train, cand_label_train).sum()
@@ -121,36 +112,37 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
         meta_optimizer.zero_grad()
         meta_batch_loss.backward()
 
-        grad_norm = nn.utils.clip_grad_norm(model.parameters(),
-                meta_training_params['grad_clip'])
+        grad_norm = nn.utils.clip_grad_norm(model.parameters(), meta_training_params['grad_clip'])
         meta_optimizer.step()
 
 
         logging.info('Meta batch loss: {}'.format(meta_batch_loss))
 
 
-        logging.info('Average inner loss before inner updates : {}'.format(np.mean(meta_test_losses_before_update)))
         logging.info('Average inner loss after inner updates : {}'.format(np.mean(meta_test_losses_after_update)))
 
 
         #Eval
 
-        eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc,avg_slot_precision = evaluate(model, validation_data, params_dir, dataset_params, device)
-
-
+        eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc,avg_slot_precision = evaluate(model,
+                eval_data, params_dir, dataset_params, device)
 
         val_loss = total_loss_eval
-        if np.abs(val_loss - prev_val_loss) < 0.01:
+        if val_loss >= prev_val_loss:
             early_stopping_count += 1
+        else:
+            early_stopping_count = 0
 
-        if early_stopping_count == 10:
+        if early_stopping_count >= 5:
             break
+
+        prev_val_loss = val_loss
         is_best_loss = val_loss <= best_loss
 
         # Save model
-        utils.save_checkpoint({'epoch': epoch + 1,
+        utils.save_checkpoint({'epoch': meta_epoch + 1,
                                'state_dict': model.state_dict(),
-                               'optim_dict': optimizer.state_dict(),
+                               'optim_dict': meta_optimizer.state_dict(),
                                'loss' : total_loss_eval,
                                'avg. goal accuracy' : eval_avg_goal_acc,
                                'avg. slot precision' : avg_slot_precision
@@ -168,12 +160,11 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
                 output_dir, "{}_metrics_val_best_weights.pkl".format(model_name))
             utils.save_dict_to_pkl(eval_metrics, best_json_path)
 
-        prev_val_loss = val_loss
 
 if __name__ == '__main__':
 
     USING_MAML_CONFIGFILE = False
-
+    model_checkpoint = False
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # first load parameters from meta_params.json
@@ -234,8 +225,11 @@ if __name__ == '__main__':
 
         dataset_params = {
             'batch_size': 2,
+            "num_of_slots": 35,
             'shuffle': True,
-            'num_workers': 1
+            'num_workers': 1,
+            #Must be 1
+            "eval_batch_size": 1
         }
 
     model_params.update(
@@ -264,7 +258,11 @@ if __name__ == '__main__':
     else:
         model = DST(**model_params)
 
+
     optimizer = optim.Adam(model.parameters(), lr=training_params['learning_rate'])
+
+    if model_checkpoint:
+        utils.load_checkpoint(os.path.join(args.output_dir, 'best.pth.tar'), model, optimizer=optimizer)
     if meta_training_params['meta_optimizer'] == 'SGD':
         meta_optimizer = optim.SGD(model.parameters(), lr=meta_training_params['meta_learning_rate'], momentum=0.9)
     elif meta_training_params['meta_optimizer'] == 'Adam':

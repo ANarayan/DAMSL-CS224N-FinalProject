@@ -1,13 +1,13 @@
 import os
 import torch
-import numpy as np 
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 import pickle
 import random
 
 
-import warnings 
+import warnings
 warnings.filterwarnings("ignore")
 
 class DialoguesDataset(Dataset):
@@ -17,26 +17,26 @@ class DialoguesDataset(Dataset):
         Args:
             data_file (string): Path to pickle file with turn+candidate pairs.
         """
-        dialogue_data = open(data_file, 'rb') 
-       
+        dialogue_data = open(data_file, 'rb')
+
         dialogues =  pickle.load(dialogue_data) # need to make sure it divisible by all batch sizes
-        
+
         # Randomly shuffle dataset
         random.seed(30)
         random.shuffle(dialogues)
 
         # For the purposes of testing (i.e. fine-tuning), use only a subset of datset examples
         dataset_split_idx = int(dataset_percentage * len(dialogues))
-        self.turn_cand_dps = dialogues[:dataset_split_idx] 
+        self.turn_cand_dps = dialogues[:dataset_split_idx]
 
-     
+
     def __len__(self):
         return len(self.turn_cand_dps)
 
     def __getitem__(self, turn_idx):
         """
             @param dialogue_idx (int): idx of dialogue we are querying data from
-            @return turn (Dict): a dictionary which contains context for a randomly 
+            @return turn (Dict): a dictionary which contains context for a randomly
                                 sampled invidual turn in the given dialogue
         """
         """
@@ -64,7 +64,7 @@ class DialoguesDataset(Dataset):
         if shuffle:
             random.seed(230)
             random.shuffle(order)
-        
+
         # if is_train, data points are in the format (cand, turn context)
         if is_train:
             # take one pass over data in the dataset
@@ -96,37 +96,47 @@ class MultiDomainDialoguesDataset(object):
         data_files (dict) : dict mapping dataset name to dataset path
         """
         self.dialogue_dict = {} # mapping from dataset name to DialoguesDataset object
-        self.data_iterator_dict  = {}
+        self.data_iterator_dict = {}
         self.total_dps = 0
 
         for ds_name, ds_path in data_files.items():
             new_dialogue_ds = DialoguesDataset(ds_path)
             self.dialogue_dict[ds_name] = new_dialogue_ds
             self.total_dps += new_dialogue_ds.__len__()
-    
+
     def __len__(self):
         return self.total_dps
 
     def data_iterator(self, batch_size, shuffle = True, is_train=False):
-        per_domain_batchsize = int(batch_size/len(self.dialogue_dict))
-        for i in range(self.__len__() // batch_size):
-            all_batch_datapoints = []
-            all_batch_labels = []
-            for _, dialogue_ds in self.dialogue_dict.items():
+        if is_train:
+            per_domain_batchsize = int(batch_size/len(self.dialogue_dict))
+            for i in range(self.__len__() // batch_size):
+                all_batch_datapoints = []
+                all_batch_labels = []
+                for _, dialogue_ds in self.dialogue_dict.items():
+                    order = list(range(dialogue_ds.__len__()))
+                    if shuffle:
+                        random.seed(230)
+                        random.shuffle(order)
+
+                    batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
+
+                    all_batch_datapoints += batch_datapoints
+                    all_batch_labels += [torch.tensor(datapoint['gt_labels']) for datapoint in batch_datapoints]
+
+                batch_data, batch_labels = all_batch_datapoints, torch.cat(all_batch_labels)
+                yield batch_data, batch_labels
+
+        else:
+            # Note: batch_size = 1 for validation and test
+            # take one pass over data in the dataset
+            i = 0
+            for j, dialogue_ds in enumerate(self.dialogue_dict.values()):
                 order = list(range(dialogue_ds.__len__()))
                 if shuffle:
                     random.seed(230)
                     random.shuffle(order)
-
-                batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
-
-                all_batch_datapoints += batch_datapoints
-                all_batch_labels += [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
-
-            batch_data, batch_labels = all_batch_datapoints, torch.stack(all_batch_labels)
-            yield batch_data, batch_labels
-        
-
-
-
-    
+                for i in range(len(dialogue_ds)):
+                    turn_and_labels = dialogue_ds.__getitem__(order[i])
+                    labels = torch.tensor(turn_and_labels['gt_labels'])
+                    yield turn_and_labels, labels

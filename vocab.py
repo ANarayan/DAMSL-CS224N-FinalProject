@@ -115,12 +115,13 @@ class Vocab():
     def load_from_json(cls, pth, ngrams=None):
         """
         Args:
-            ngrams (str): include 1,2,...,ngrams-grams
+            ngrams (list[str]): include 1,2,...,ngrams-grams
         """
         vocab_dict = {}
         if ngrams is not None:
-            new_entries = json.load(open(pth, 'r'))[ngrams]
-            vocab_dict.update(new_entries)
+            for ngram in ngrams:
+                new_entries = json.load(open(pth, 'r'))[ngram]
+                vocab_dict.update(new_entries)
 
         else:
             vocab_dict = json.load(open(pth, 'r'))
