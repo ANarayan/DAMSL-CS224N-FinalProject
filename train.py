@@ -15,7 +15,7 @@ from tqdm import trange
 
 import utils 
 from model.DSTModel import DST
-from model.data_loader import DialoguesDataset
+from model.data_loader import DialoguesDataset, MultiDomainDialoguesDataset
 from evaluate import evaluate
 from torch.utils.data import Dataset, DataLoader
 #from torch.utils.tensorboard import SummaryWriter
@@ -110,7 +110,7 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         logging.info("Epoch {}/{}".format(epoch+1,total_epochs))
         
         # Train model
-        total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
+        #total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
 
         # Evaluate model
         eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(model, validation_data, model_dir, dataset_params, device)
@@ -126,14 +126,15 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         is_best_loss = val_loss <= best_loss
 
         # Save model 
-        utils.save_checkpoint({'epoch': epoch + 1,
-                               'state_dict': model.state_dict(),
-                               'optim_dict': optimizer.state_dict(),
-                               'loss' : total_loss_eval,
-                               'avg. goal accuracy' : eval_avg_goal_acc,
-                               },
+        utils.save_checkpoint({ 'epoch': epoch + 1,
+                                'state_dict': model.state_dict(),
+                                'optim_dict': optimizer.state_dict(),
+                                'loss' : total_loss_eval,
+                                'avg. goal accuracy' : eval_avg_goal_acc,
+                                 },
                                 checkpoint=model_dir,
-                                is_best=is_best_loss)
+                                is_best=is_best_loss
+                            )
 
         # If best_eval, best_save_path
         if is_best_loss:
@@ -181,13 +182,39 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
-    MODEL_CHECKPOINT = True
+    MODEL_CHECKPOINT = False
 
+    """
     TRAIN_FILE_NAME = 'attraction_hyst_train_wslot.pkl'
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
     VAL_FILE_NAME = 'attraction_hyst_val_wslot.pkl'
     #VAL_FILE_NAME = 'single_pt_dataset.pkl'
     TEST_FILE_NAME = 'attraction_hyst_test_wslot.pkl'
+    """
+
+    # first load parameters from params.json
+    args = parser.parse_args()
+
+    TRAIN_FILE_PATHS = {
+                'train' : os.path.join(args.data_dir, 'train_hyst_train_wslot.pkl'),
+                'taxi' : os.path.join(args.data_dir, 'taxi_hyst_train_wslot.pkl'),
+                'restaurant' : os.path.join(args.data_dir, 'restaurant_hyst_train_wslot.pkl'),
+                'hotel' : os.path.join(args.data_dir,'hotel_hyst_train_wslot.pkl')
+            }
+
+    VAL_FILE_PATHS = {
+                'train' : os.path.join(args.data_dir,'train_hyst_val_wslot.pkl'),
+                'restaurant' : os.path.join(args.data_dir, 'restaurant_hyst_val_wslot.pkl'),
+                'hotel' :  os.path.join(args.data_dir,'hotel_hyst_val_wslot.pkl'),
+                'taxi' : os.path.join(args.data_dir, 'taxi_hyst_val_wslot.pkl')
+            }
+
+    TEST_FILE_PATHS = {
+                'train' :  os.path.join(args.data_dir,'train_hyst_test_wslot.pkl'),
+                'hotel' :  os.path.join(args.data_dir,'hotel_hyst_test_wslot.pkl'),
+                'taxi' :  os.path.join(args.data_dir,'taxi_hyst_test_wslot.pkl'),
+                'restaurant' :  os.path.join(args.data_dir,'restaurant_hyst_test_wslot.pkl')
+            }
 
     # first load parameters from params.json
     args = parser.parse_args()
@@ -222,8 +249,8 @@ if __name__ == '__main__':
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
         'ngrams' : ['3'],
-        'candidate_utterance_vocab_pth' : 'mst_attraction_vocab_v2.json',
-        'da_vocab_pth': 'mst_attraction_davocab_v2.json',
+        'candidate_utterance_vocab_pth' : 'mst_maml_vocab.json',
+        'da_vocab_pth': 'mst_maml_davocab.json',
         'device' : device
     }
 
@@ -231,7 +258,7 @@ if __name__ == '__main__':
         'num_epochs' : 20,
         'learning_rate' : params['learning_rate'],
         'pos_weighting' : pos_weights,
-        'train_set_percentage' : .1, # used for fine-tuning experiments
+        'train_set_percentage' : 1, # used for fine-tuning experiments
     }
 
     dataset_params = {
@@ -246,9 +273,9 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # Load data
-    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), training_params['train_set_percentage'])
-    validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME))
-    test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME))
+    training_data = MultiDomainDialoguesDataset(TRAIN_FILE_PATHS)
+    validation_data = MultiDomainDialoguesDataset(VAL_FILE_PATHS)
+    test_data = MultiDomainDialoguesDataset(TEST_FILE_PATHS) 
 
     logging.info("-done")
 

@@ -96,7 +96,6 @@ class MultiDomainDialoguesDataset(object):
         data_files (dict) : dict mapping dataset name to dataset path
         """
         self.dialogue_dict = {} # mapping from dataset name to DialoguesDataset object
-        self.data_iterator_dict  = {}
         self.total_dps = 0
 
         for ds_name, ds_path in data_files.items():
@@ -107,24 +106,50 @@ class MultiDomainDialoguesDataset(object):
     def __len__(self):
         return self.total_dps
 
-    def data_iterator(self, batch_size, shuffle = True, is_train=False):
+    def data_iterator(self, batch_size=1, shuffle = True, is_train=False):
         per_domain_batchsize = int(batch_size/len(self.dialogue_dict))
-        for i in range(self.__len__() // batch_size):
-            all_batch_datapoints = []
-            all_batch_labels = []
-            for _, dialogue_ds in self.dialogue_dict.items():
-                order = list(range(dialogue_ds.__len__()))
-                if shuffle:
-                    random.seed(230)
-                    random.shuffle(order)
+        domain_idx_order = {}
 
-                batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
+        # shuffle the order of access of each of the individual datasets
+        for dialogue_name, dialogue_ds in self.dialogue_dict.items():
+            order = list(range(dialogue_ds.__len__()))
+            if shuffle:
+                random.seed(230)
+                random.shuffle(order)
+            domain_idx_order[dialogue_name] = order
+            
+        if is_train:
+            for i in range(self.__len__() // batch_size):
+                all_batch_datapoints = []
+                all_batch_labels = []
 
-                all_batch_datapoints += batch_datapoints
-                all_batch_labels += [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+                for ds_name, dp_order in domain_idx_order.items():
+                    dialogue_ds = self.dialogue_dict[ds_name]
+                    if (i+1) * per_domain_batchsize < dialogue_ds.__len__():
+                        batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in dp_order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
+                        labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+                    else:
+                        if (i * per_domain_batchsize) < dialogue_ds.__len__():
+                            batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in dp_order[i*per_domain_batchsize:] ]
+                            labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+                    
+                    all_batch_datapoints += batch_datapoints
+                    all_batch_labels += labels
+                batch_data, batch_labels = all_batch_datapoints, torch.stack(all_batch_labels)
+                yield batch_data, batch_labels
+        else:
+            for i in range(self.__len__() // batch_size):
+                # if evaluation, batch size is 1 --> just pick a random dataset to choose a eval turn from
+               for _, dialogue_ds in self.dialogue_dict.items():
+                    for idx in range(dialogue_ds.__len__()):
+                        batch_turn = dialogue_ds.__getitem__(idx)
+                        batch_label = torch.Tensor(batch_turn['gt_labels']) 
 
-            batch_data, batch_labels = all_batch_datapoints, torch.stack(all_batch_labels)
-            yield batch_data, batch_labels
+                        # batch_data: turn context, batch_labels: gt_annotation for each candidate in the turn
+                        batch_data, batch_label = batch_turn, batch_label
+                        yield batch_data, batch_label
+
+            
         
 
 
