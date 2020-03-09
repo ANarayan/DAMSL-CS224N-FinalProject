@@ -9,11 +9,11 @@ from copy import deepcopy
 
 import torch
 import torchvision
-import numpy as np 
+import numpy as np
 import torch.optim as optim
 from tqdm import trange
 
-import utils 
+import utils
 from model.DSTModel import DST
 from model.data_loader import DialoguesDataset
 from evaluate import evaluate
@@ -45,7 +45,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     total_loss_train = 0
 
     num_steps = training_data.__len__() // batch_size
-        
+
     t = trange(num_steps)
 
     for i in t:
@@ -54,7 +54,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
             output = model.forward(turn_and_cand) # Tensor: (batch_size, 1, embed_size)
             output = output.squeeze(dim=1).cpu()
 
-            # need to weight loss due to the imbalance in positive to negative examples 
+            # need to weight loss due to the imbalance in positive to negative examples
             if training_params['pos_weighting'] is not None:
                 pos_weights = torch.tensor(training_params['pos_weighting'])
             else:
@@ -76,7 +76,7 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
                             'batch_loss' : batch_loss,
                     }
             summ.append(summary_batch)
-            
+
             # add to total loss
             total_loss_train += batch_loss
 
@@ -84,11 +84,11 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
         except StopIteration:
             break
 
-    
+
     avg_loss_train = total_loss_train/(num_steps)
- 
-    
-    metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]} 
+
+
+    metrics_mean = {metric:np.mean([x[metric] for x in summ if x[metric] is not None]) for metric in summ[0]}
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Train metrics : " + metrics_string)
     logging.info("Average Training loss: {}".format(avg_loss_train))
@@ -108,7 +108,7 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 
     for epoch in range(total_epochs):
         logging.info("Epoch {}/{}".format(epoch+1,total_epochs))
-        
+
         # Train model
         total_loss_train, avg_loss_train = train(model, training_data, optimizer, model_dir, training_params, dataset_params, device)
 
@@ -125,7 +125,7 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
         val_loss = total_loss_eval
         is_best_loss = val_loss <= best_loss
 
-        # Save model 
+        # Save model
         utils.save_checkpoint({'epoch': epoch + 1,
                                'state_dict': model.state_dict(),
                                'optim_dict': optimizer.state_dict(),
@@ -209,15 +209,15 @@ if __name__ == '__main__':
         pos_weights = weights_dict[args.fine_tune_domain]
     else:
         pos_weights = None
-    
-    
+
+
     model_params = {
-        'embed_dim' : 300, 
-        'sentence_hidden_dim' : params['sentence_hidden_dim'], 
+        'embed_dim' : 300,
+        'sentence_hidden_dim' : params['sentence_hidden_dim'],
         'hierarchial_hidden_dim' : params['hierarchial_hidden_dim'],
-        'da_hidden_dim' : params[ 'da_hidden_dim'], 
+        'da_hidden_dim' : params[ 'da_hidden_dim'],
         'da_embed_size' : 50,
-        'ff_hidden_dim' : params['ff_hidden_dim'], 
+        'ff_hidden_dim' : params['ff_hidden_dim'],
         'ff_dropout_prob' : params[ 'ff_dropout_prob'],
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
@@ -246,9 +246,9 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # Load data
-    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), training_params['train_set_percentage'])
-    validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME))
-    test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME))
+    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), device=device, training_params['train_set_percentage'])
+    validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME), device=device)
+    test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME), device=device)
 
     logging.info("-done")
 
@@ -260,18 +260,18 @@ if __name__ == '__main__':
 
     if MODEL_CHECKPOINT:
         utils.load_checkpoint(os.path.join(args.model_dir, 'best.pth.tar'), model)
-    
+
     optimizer = optim.Adam(model.parameters(), lr=training_params['learning_rate'])
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(training_params['num_epochs']))
 
     best_val_loss = train_and_eval(model, training_data, validation_data, optimizer, args.output_model_dir, training_params, dataset_params, device)
-    
+
     """
     # TODO: Need to update which of the current parameter configurations yielded the best results! Read in file, compare best va;
     # acc with current accuracy and replace or dont replace.
-    
+
 
     # Update which model config yielded the best results
     json_path = os.path.join('experiments/', 'best_config.json')
@@ -282,7 +282,7 @@ if __name__ == '__main__':
         best_results_dict['best_val_loss'] = best_val_loss
         best_results_dict['experiment_name'] = experiment_name
         utils.write_json_file(best_results_dict, json_path)
-    
+
     """
     test_model = DST(**model_params).cuda()
     utils.load_checkpoint(os.path.join(args.output_model_dir, 'best.pth.tar'), test_model)
