@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 
 class DialoguesDataset(Dataset):
     """ Dialogues dataset """
-    def __init__(self, data_file, dataset_percentage=1):
+    def __init__(self, data_file, device=None, dataset_percentage=1):
         """
         Args:
             data_file (string): Path to pickle file with turn+candidate pairs.
@@ -28,6 +28,7 @@ class DialoguesDataset(Dataset):
         # For the purposes of testing (i.e. fine-tuning), use only a subset of datset examples
         dataset_split_idx = int(dataset_percentage * len(dialogues))
         self.turn_cand_dps = dialogues[:dataset_split_idx]
+        self.device = device
 
 
     def __len__(self):
@@ -70,7 +71,7 @@ class DialoguesDataset(Dataset):
             # take one pass over data in the dataset
             for i in range(self.__len__() // batch_size):
                 batch_datapoints = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
-                batch_labels = [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+                batch_labels = [torch.tensor(datapoint['gt_label'],device=self.device) for datapoint in batch_datapoints]
 
                 batch_data, batch_labels = batch_datapoints, torch.stack(batch_labels)
 
@@ -82,7 +83,7 @@ class DialoguesDataset(Dataset):
             # take one pass over data in the dataset
             for i in range(self.__len__() // batch_size):
                 batch_turns = [self.__getitem__(idx) for idx in order[i*batch_size: (i+1)*batch_size]]
-                batch_labels = [torch.Tensor(turn['gt_labels']) for turn in batch_turns]
+                batch_labels = [torch.tensor(turn['gt_labels'], device=self.device) for turn in batch_turns]
 
                 # batch_data: turn context, batch_labels: gt_annotation for each candidate in the turn
                 batch_data, batch_labels = batch_turns[0], batch_labels[0]
@@ -91,16 +92,17 @@ class DialoguesDataset(Dataset):
 
 
 class MultiDomainDialoguesDataset(object):
-    def __init__(self, data_files):
+    def __init__(self, data_files, device=None):
         """
         data_files (dict) : dict mapping dataset name to dataset path
         """
         self.dialogue_dict = {} # mapping from dataset name to DialoguesDataset object
         self.data_iterator_dict = {}
         self.total_dps = 0
+        self.device = device
 
         for ds_name, ds_path in data_files.items():
-            new_dialogue_ds = DialoguesDataset(ds_path)
+            new_dialogue_ds = DialoguesDataset(ds_path, device=self.device)
             self.dialogue_dict[ds_name] = new_dialogue_ds
             self.total_dps += new_dialogue_ds.__len__()
 
@@ -122,7 +124,7 @@ class MultiDomainDialoguesDataset(object):
                     batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
 
                     all_batch_datapoints += batch_datapoints
-                    all_batch_labels += [torch.tensor(datapoint['gt_labels']) for datapoint in batch_datapoints]
+                    all_batch_labels += [torch.tensor(datapoint['gt_labels'], device=self.device) for datapoint in batch_datapoints]
 
                 batch_data, batch_labels = all_batch_datapoints, torch.cat(all_batch_labels)
                 yield batch_data, batch_labels
@@ -138,5 +140,5 @@ class MultiDomainDialoguesDataset(object):
                     random.shuffle(order)
                 for i in range(len(dialogue_ds)):
                     turn_and_labels = dialogue_ds.__getitem__(order[i])
-                    labels = torch.tensor(turn_and_labels['gt_labels'])
+                    labels = torch.tensor(turn_and_labels['gt_labels'], device=self.device)
                     yield turn_and_labels, labels

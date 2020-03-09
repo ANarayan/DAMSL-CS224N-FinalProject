@@ -21,53 +21,31 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
-BASE_DIR = Path.cwd().parents[0]
+BASE_DIR = os.pardir
 DOMAINS = ['restaurant', 'hotel', 'attraction', 'taxi', 'train']
 
 
-def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer, params_dir,
-        data_dir, training_params, dataset_params, meta_training_params, model_params,
-        output_dir, device):
-    """
-    Train on n - 1 domains, eval and test on nth
+def train_maml(model, tasks_train, domains, optimizer, meta_optimizer,training_params, meta_training_params, model_params):
 
-    Args:
-        trainandval_data_files: dict {domain_name: {train_file_path: fp, val_file_path: fp}
-    """
-
-    domain_names = trainandval_data_files.keys()
-    leave_out_domain = [d for d in DOMAINS if d not in domain_names][0]
-
-    model_name = 'maml_leaveout_{}'.format(leave_out_domain)
-
-
-    eval_data = MultiDomainDialoguesDataset({'{}_val'.format(d):
-        Path(data_dir) / trainandval_data_files[d]['val_file_path'] for d in domain_names})
-
-    tasks_train = [DialoguesDataset(Path(data_dir) / trainandval_data_files[domain]['train_file_path']) for
-            domain in domain_names]
-    train_generators = [train_dataset.data_iterator(meta_training_params['meta_inner_batch_size'], shuffle=True)
+    model.train()
+    train_generators = [train_dataset.data_iterator(meta_training_params['meta_inner_batch_size'],
+        shuffle=True)
             for train_dataset in tasks_train]
 
+    n_training_examples = sum([len(t) for t in tasks_train])
     pos_weights = None
     if training_params.get('pos_weighting'):
         pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
     loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
 
     meta_batch_size = meta_training_params['meta_outer_batch_size']
+    inner_batch_size = meta_training_params['meta_inner_batch_size']
 
-    total_meta_loss = 0
-
-    best_val_acc = 0.0
-    prev_val_acc = 0.0
-    best_loss = 1e1000
-    prev_val_loss = 1e1000
-    early_stopping_count = 0
-    #Train
-    for meta_epoch in trange(meta_training_params['meta_epochs']):
-
-        logging.info('Meta epoch {}...'.format(meta_epoch))
-
+    total_avg_meta_loss_single_epoch = 0
+    total_processed = 0
+    smpl_size = meta_training_params['meta_outer_batch_size']
+    #print("N training examples: {}".format(n_training_examples))
+    for i in trange(n_training_examples // (meta_batch_size * inner_batch_size // 2) + 1):
         model_pre_metaupdate = deepcopy(model.state_dict())
 
         meta_batch_loss = 0
@@ -76,18 +54,21 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
         meta_test_outputs = []
 
         #Sample batch
-        batch_of_tasks = random.sample(train_generators, meta_training_params['meta_outer_batch_size'])
+        batch_of_tasks = random.sample(train_generators, smpl_size)
+
         for t in batch_of_tasks:
             try:
                 turn_and_cand_train, cand_label_train = next(t)
                 turn_and_cand_test, cand_label_test = next(t)
             except StopIteration:
                 train_generators.pop(train_generators.index(t))
+                if len(train_generators) < smpl_size:
+                    smpl_size = len(train_generators)
                 if not train_generators:
-                    break
+                    return total_avg_meta_loss_single_epoch
                 else:
                     continue
-
+            total_processed += len(cand_label_train) * 2
             output_train = model(turn_and_cand_train)
             task_train_loss = loss_func(output_train, cand_label_train).sum()
 
@@ -105,9 +86,9 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
             #Restore weights to before any task loop updates
 
             model.load_state_dict(model_pre_metaupdate)
-
+            model.to(device)
         #Meta update
-
+        #print("Total processed {}".format(total_processed))
         meta_batch_loss /= meta_batch_size
         meta_optimizer.zero_grad()
         meta_batch_loss.backward()
@@ -116,14 +97,49 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
         meta_optimizer.step()
 
 
-        logging.info('Meta batch loss: {}'.format(meta_batch_loss))
 
 
-        logging.info('Average inner loss after inner updates : {}'.format(np.mean(meta_test_losses_after_update)))
+        #logging.info('Average inner loss after inner updates : {}'.format(np.mean(meta_test_losses_after_update)))
+        total_avg_meta_loss_single_epoch += meta_batch_loss
 
+    return total_avg_meta_loss_single_epoch
 
+def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer, params_dir,
+        data_dir, training_params, dataset_params, meta_training_params, model_params,
+        output_dir, device):
+    """
+    Train on n - 1 domains, eval and test on nth
+
+    Args:
+        trainandval_data_files: dict {domain_name: {train_file_path: fp, val_file_path: fp}
+    """
+
+    domain_names = trainandval_data_files.keys()
+    leave_out_domain = [d for d in DOMAINS if d not in domain_names][0]
+
+    model_name = 'maml_leaveout_{}'.format(leave_out_domain)
+
+    tasks_train = [DialoguesDataset(os.path.join(data_dir,
+        trainandval_data_files[domain]['train_file_path']), device=device) for
+            domain in domain_names]
+
+    eval_data = MultiDomainDialoguesDataset({'{}_val'.format(d):
+        os.path.join(data_dir, trainandval_data_files[d]['val_file_path']) for d in domain_names}, device=device)
+
+    best_val_acc = 0.0
+    prev_val_acc = 0.0
+    best_loss = 1e1000
+    prev_val_loss = 1e1000
+    early_stopping_count = 0
+    #Train
+    for meta_epoch in trange(meta_training_params['meta_epochs']):
+
+        logging.info('Meta epoch {}...'.format(meta_epoch))
+        total_train_loss = train_maml(model, tasks_train, domains, optimizer, meta_optimizer, training_params,
+                meta_training_params, model_params)
+
+        logging.info("Total train loss: {}".format(total_train_loss))
         #Eval
-
         eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc,avg_slot_precision = evaluate(model,
                 eval_data, params_dir, dataset_params, device)
 
@@ -133,7 +149,8 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
         else:
             early_stopping_count = 0
 
-        if early_stopping_count >= 5:
+        if early_stopping_count >= 3:
+            logging.info("Early stopping because eval loss not decreased for 3 consecutive meta epochs")
             break
 
         prev_val_loss = val_loss
@@ -170,12 +187,12 @@ if __name__ == '__main__':
     # first load parameters from meta_params.json
 
     parser = ArgumentParser()
-    parser.add_argument('--data_dir', default='{}/final_maml_dataset/'.format(BASE_DIR), help='Directory which contain the dialogue dataset')
+    parser.add_argument('--data_dir', default='{}/final_maml_dataset'.format(BASE_DIR), help='Directory which contain the dialogue dataset')
     parser.add_argument('--params_dir', default=os.getcwd(), help="Directory containing saved model binaries/\
             train logs")
-    parser.add_argument('--vocab_dir', default='{}/maml_MTL_vocab/'.format(BASE_DIR), help='Dir containing two vocab files')
+    parser.add_argument('--vocab_dir', default='{}/maml_MTL_vocab'.format(BASE_DIR), help='Dir containing two vocab files')
     parser.add_argument('--config_file', default=False, help='Optionally specify a config file in json format')
-    parser.add_argument('--output_dir', default = '{}/experiments/maml/'.format(BASE_DIR),
+    parser.add_argument('--output_dir', default = '{}/experiments/maml'.format(BASE_DIR),
             help='Where to save model binaries and experiment files')
     parser.add_argument('--domains', nargs='+', default=DOMAINS, help="Which domains to train on")
     args = parser.parse_args()
@@ -254,6 +271,7 @@ if __name__ == '__main__':
 
     # define model and optimizer
     if torch.cuda.is_available():
+        torch.cuda.set_device(device)
         model = DST(**model_params).cuda()
     else:
         model = DST(**model_params)

@@ -11,6 +11,8 @@ import numpy as np
 from model.embeddings import Embeddings
 from vocab import Vocab, DAVocab
 
+torch.set_default_dtype(torch.double)
+
 class DST(nn.Module):
     """ Dialogue State Tracking Model
     """

@@ -118,7 +118,7 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
     num_of_steps = evaluation_data.__len__() // batch_size
 
     # no loss weightage in eval step
-    pos_weights = torch.tensor([1.0] * num_of_slots)
+    pos_weights = torch.tensor([1.0] * num_of_slots, device=device)
     loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
     # summary for current eval loop
     summ = []
@@ -134,14 +134,11 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             context_vector = model.get_turncontext(turn)
             context_vector_formatted = torch.cat(len(candidates)*[context_vector]).unsqueeze(dim=1)
             output = model.feed_forward(context_vector_formatted, candidates)
-            output = output.squeeze(dim=1).cpu()
-
+            output = output.squeeze(dim=1)
 
             # 1) Compute loss
-
             # need to weightage in evaluation
             loss = loss_func(output, turn_label)
-
             # 2) Compute summary statistics
 
             # get the gt slot values
@@ -206,7 +203,7 @@ if __name__ == '__main__':
     data_path = os.path.join(args.data_dir, args.data_filename)
     print(data_path)
     assert os.path.isfile(data_path)
-    evaluation_data = DialoguesDataset(data_path)
+    evaluation_data = DialoguesDataset(data_path, device=device)
 
     # model param file
     param_path = os.path.join(args.model_dir, 'params.json')
