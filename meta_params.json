@@ -1,0 +1,33 @@
+{
+    "model" : {
+        "embed_dim" : 300,
+        "sentence_hidden_dim" : 256,
+        "hierarchial_hidden_dim" : 512,
+        "da_hidden_dim" : 64,
+        "da_embed_size" : 50,
+        "ff_hidden_dim" : 256,
+        "ff_dropout_prob": 0.3,
+        "batch_size" : 128,
+        "num_slots" : 35,
+        "ngrams" : "3"
+    },
+
+    "training" : {
+        "learning_rate" : 0.001
+    },
+
+    "meta_training" : {
+        "meta_epochs": 20,
+        "meta_outer_batch_size": 3,
+        "meta_inner_batch_size": 128,
+        "meta_learning_rate": 0.001,
+        "meta_optimizer": "Adam",
+        "grad_clip" : 5.0
+    },
+
+    "data" : {
+        "batch_size": 2,
+        "shuffle": 1,
+        "num_workers": 1
+    }
+}

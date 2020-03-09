@@ -14,7 +14,7 @@ from vocab import Vocab, DAVocab
 class DST(nn.Module):
     """ Dialogue State Tracking Model
     """
-    def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size, 
+    def __init__(self, embed_dim, sentence_hidden_dim, hierarchial_hidden_dim, da_hidden_dim, da_embed_size,
                 ff_hidden_dim, ff_dropout_prob, batch_size, num_slots, ngrams, candidate_utterance_vocab_pth, da_vocab_pth, device):
         super(DST, self).__init__()
 
@@ -28,31 +28,31 @@ class DST(nn.Module):
 
         self.system_dialogue_acts = DialogueActsLSTM(da_embed_size, da_hidden_dim, batch_size, self.da_embeddings,
                 self.da_vocab)
-        # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances, 
+        # context_dim = | [E_i; Z_i; A_i; C_ij] | where E_i = encoded utterance, Z_i = encoding of past user utterances,
         #                                               A_i = system actions, C_ij = candidate encoding
         self.context_cand_dim = embed_dim + 2 * (sentence_hidden_dim) + hierarchial_hidden_dim + da_hidden_dim
         self.classification_net = ClassificationNet(self.context_cand_dim, ff_hidden_dim, num_slots, ff_dropout_prob)
         self.device = device
 
     def get_turncontext(self, turn):
-        """ Compute turn context -- dependent on user utterance, system dialogue acts, 
+        """ Compute turn context -- dependent on user utterance, system dialogue acts,
             and dialogue history
-            @param turn (Dict): turn['user_utterance'] : user utterance for the turn (List[String]), 
-                            turn['system_actions_formatted'] : agent dialogue acts (List[String]), 
+            @param turn (Dict): turn['user_utterance'] : user utterance for the turn (List[String]),
+                            turn['system_actions_formatted'] : agent dialogue acts (List[String]),
                             turn['utterance_history'] : encoded user utterance history (List[Tensors])
-            @return context (Tensor): concated feature vector 
-            @return utterance_enc (Tensor): encoded utterance 
+            @return context (Tensor): concated feature vector
+            @return utterance_enc (Tensor): encoded utterance
         """
         user_utterance = turn['user_utterance']
         system_dialogue_acts = turn['system_dialogue_acts']
         past_utterances = turn['utterance_history']
         #To optimize with pack_padded_sequence in self.sentence_encoder, if necessary
         utterances_lengths = [len(utt) for utt in past_utterances]
-        
+
         utt_idxs = self.candidate_utterance_vocab.to_idxs_tensor(past_utterances, device=self.device)
         #utt_idxs_packed = pack_padded_sequence(utt_idxs, utterances_lengths)
         encoded_past_utterances = self.sentence_encoder(utt_idxs)
-        
+
         # get encoded user utterance for the current turn
         # self.system_dialogue_acts(da_idxs) returns ((1,512))
         utterance_enc = torch.index_select(encoded_past_utterances, 0, torch.tensor([len(encoded_past_utterances)
@@ -79,8 +79,8 @@ class DST(nn.Module):
             @returns predicted (Tensor): output vector representing the per slot prediction for
                         each candidate (num_slots x 1)
         """
-        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate).cuda() 
-        embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2) 
+        candidate_idx = self.candidate_utterance_vocab.to_idxs_tensor(candidate).cuda()
+        embed_cand = self.candidate_utterance_embeddings.embeddings(candidate_idx).permute(1,0,2)
         feed_forward_input = torch.cat((turn_context, embed_cand), dim=2)
         output = self.classification_net(feed_forward_input)
         return output
@@ -90,9 +90,9 @@ class DST(nn.Module):
         candidates = [cand_dict['candidate'] for cand_dict in turn_and_cand]
         output = self.feed_forward(context_vectors, candidates) # Tensor: (batch_size, 1, embed_size)
         return output.squeeze(dim=1)
-         
-class SentenceBiLSTM(nn.Module): 
-    """ BiLSTM used to encode individual user utterances 
+
+class SentenceBiLSTM(nn.Module):
+    """ BiLSTM used to encode individual user utterances
     """
     def __init__(self, hidden_dim, embed_dim, candidate_encoder, batch_size):
         """ Init SentenceBiLSTM
@@ -110,12 +110,12 @@ class SentenceBiLSTM(nn.Module):
 
         # candidate encoder is an embedding lookup of dimensions embed_dim
         self.candidate_encoder = candidate_encoder
-        
+
         # Initialized the biLSTM
         # input: embedded word representation of dim embed_size
         # output: sentence representation of dim hidden_size
         self.sentence_biLSTM = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
-   
+
     def forward(self, sentence_idx):
         embeds = self.candidate_encoder.embeddings(sentence_idx).permute(1,0,2).contiguous()
         encoding, (last_hidden, last_cell)= self.sentence_biLSTM(embeds)
@@ -128,7 +128,7 @@ class SentenceBiLSTM(nn.Module):
 
 class HierarchicalLSTM(nn.Module):
     """
-    Encodes sentence 
+    Encodes sentence
     """
     def __init__(self, embedding_dim, hidden_dim):
         super().__init__()
@@ -142,7 +142,7 @@ class HierarchicalLSTM(nn.Module):
             last_hidden: Tensor(1, b, hidden_dim)
         """
         hidden_sts, (last_hidden, last_cell) = self.hierarchical_lstm(encoded_past_utterances)
-        return last_hidden 
+        return last_hidden
 
 class PreviousStateEncoding(nn.Module):
     def __init__(self, emb_dim, max_n_states):
@@ -172,7 +172,7 @@ class DialogueActsLSTM(nn.Module):
 
     def forward(self, dialogue_acts_idxs):
         """
-        --dialogue_acts_idxs: Tensor(t dialogue acts, max len of dialogue acts in single turn out of last t turns) 
+        --dialogue_acts_idxs: Tensor(t dialogue acts, max len of dialogue acts in single turn out of last t turns)
 
         """
         embs = self.da_embeddings.embeddings(dialogue_acts_idxs).view(dialogue_acts_idxs.shape[1], 1, self.embed_dim)

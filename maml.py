@@ -15,18 +15,19 @@ from tqdm import trange
 import utils
 from model.DSTModel import DST
 from model.data_loader import DialoguesDataset
-from model.DSTModel import goal_accuracy_metric
 from evaluate import evaluate
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
-BASE_DIR = Path.cwd().parents[1]
+BASE_DIR = Path.cwd().parents[0]
+DOMAINS = ['restaurant', 'hotel', 'attraction', 'taxi', 'train']
 
 
-def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, meta_optimizer, model_dir, data_dir,
-        training_params, dataset_params, meta_training_params, model_params, device):
+def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer, params_dir,
+        data_dir, training_params, dataset_params, meta_training_params, model_params,
+        output_dir, device):
     """
     Train on n - 1 domains, eval and test on nth
 
@@ -39,17 +40,23 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
 
     # Load training and test sets for n - 1 domains
 
+    import pdb;pdb.set_trace()
     domain_names = trainandval_data_files.keys()
-    tasks_train = [DialoguesDataset(Path(data_dir) / trainandval_data_files[domain]['train_file_path']) for domain in
-            domain_names]
-    tasks_val = [DialoguesDataset(Path(data_dir) / trainandval_data_files[domain]['val_file_path']) for domain in
-            domain_names]
-    train_generators = [train_dataset.data_iterator(meta_training_params['meta_inner_batch_size'], shuffle=True) for train_dataset in tasks_train]
-    val_generators = [val_dataset.data_iterator(meta_training_params['meta_inner_batch_size'], shuffle=True) for
-            val_dataset in tasks_val]
-    generators = list(zip(train_generators, val_generators))
+    leave_out_domain = [d for d in DOMAINS if d not in domain_names][0]
 
-    pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
+    model_name = 'maml_leaveout_{}'.format(leave_out_domain)
+
+
+    tasks_train = [DialoguesDataset(Path(data_dir) / trainandval_data_files[domain]['train_file_path']) for
+            domain in domain_names]
+    train_generators = [train_dataset.data_iterator(meta_training_params['meta_inner_batch_size'], shuffle=True)
+            for train_dataset in tasks_train]
+
+    generators = train_generators
+
+    pos_weights = None
+    if training_params.get('pos_weighting'):
+        pos_weights = torch.tensor([training_params['pos_weighting']] * model_params['num_slots'])
     loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
 
     meta_batch_size = meta_training_params['meta_outer_batch_size']
@@ -78,8 +85,8 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
         batch_of_tasks = random.sample(generators, meta_training_params['meta_outer_batch_size'])
         for t in batch_of_tasks:
             try:
-                turn_and_cand_train, cand_label_train = next(t[0])
-                turn_and_cand_test, cand_label_test = next(t[0])
+                turn_and_cand_train, cand_label_train = next(t)
+                turn_and_cand_test, cand_label_test = next(t)
             except StopIteration:
                 generators.pop(generators.index(t))
                 if not generators:
@@ -113,6 +120,9 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
         meta_batch_loss /= meta_batch_size
         meta_optimizer.zero_grad()
         meta_batch_loss.backward()
+
+        grad_norm = nn.utils.clip_grad_norm(model.parameters(),
+                meta_training_params['grad_clip'])
         meta_optimizer.step()
 
 
@@ -125,12 +135,16 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
 
         #Eval
 
-        if not meta_epoch % 10:
-            eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc, avg_slot_precision = evaluate(model, validation_data, model_dir, dataset_params, device)
+        eval_metrics, total_loss_eval, eval_avg_goal_acc, eval_joint_goal_acc,avg_slot_precision = evaluate(model, validation_data, params_dir, dataset_params, device)
 
 
-        #Using loss to do HP tuning
+
         val_loss = total_loss_eval
+        if np.abs(val_loss - prev_val_loss) < 0.01:
+            early_stopping_count += 1
+
+        if early_stopping_count == 10:
+            break
         is_best_loss = val_loss <= best_loss
 
         # Save model
@@ -139,8 +153,9 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
                                'optim_dict': optimizer.state_dict(),
                                'loss' : total_loss_eval,
                                'avg. goal accuracy' : eval_avg_goal_acc,
+                               'avg. slot precision' : avg_slot_precision
                                },
-                                checkpoint=model_dir,
+                                checkpoint=output_dir,
                                 is_best=is_best_loss)
 
         # If best_eval, best_save_path
@@ -150,52 +165,43 @@ def train_and_eval_maml(model, trainandval_data_files, eval_data, optimizer, met
 
             # Save best val metrics in a json file in the model directory
             best_json_path = os.path.join(
-                model_dir, "metrics_val_best_weights.pkl")
+                output_dir, "{}_metrics_val_best_weights.pkl".format(model_name))
             utils.save_dict_to_pkl(eval_metrics, best_json_path)
 
-        # Save latest val metrics in a json file in the model directory
-        last_json_path = os.path.join(
-            model_dir, "metrics_val_last_weights.pkl")
-        utils.save_dict_to_pkl(eval_metrics, last_json_path)
+        prev_val_loss = val_loss
 
 if __name__ == '__main__':
 
     USING_MAML_CONFIGFILE = False
-    TRAIN_FILE_NAME = 'restaurant_hyst_train.pkl'
-    #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
-    VAL_FILE_NAME = 'restaurant_hyst_val.pkl'
-    #VAL_FILE_NAME = 'single_pt_dataset.pkl'
-    TEST_FILE_NAME = 'restaurant_hyst_test.pkl'
-
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # first load parameters from meta_params.json
 
     parser = ArgumentParser()
-    parser.add_argument('--data_dir', default='final_maml_dataset/', help='Directory which contain the dialogue dataset')
-    parser.add_argument('--model_dir', default='experiments/', help="Directory containing saved model binaries/\
+    parser.add_argument('--data_dir', default='{}/final_maml_dataset/'.format(BASE_DIR), help='Directory which contain the dialogue dataset')
+    parser.add_argument('--params_dir', default=os.getcwd(), help="Directory containing saved model binaries/\
             train logs")
+    parser.add_argument('--vocab_dir', default='{}/maml_MTL_vocab/'.format(BASE_DIR), help='Dir containing two vocab files')
     parser.add_argument('--config_file', default=False, help='Optionally specify a config file in json format')
+    parser.add_argument('--output_dir', default = '{}/experiments/maml/'.format(BASE_DIR),
+            help='Where to save model binaries and experiment files')
+    parser.add_argument('--domains', nargs='+', default=DOMAINS, help="Which domains to train on")
     args = parser.parse_args()
 
-
+    domains = args.domains
 
     USING_MAML_CONFIGFILE = args.config_file
 
-    # Load in candidate vocab
-    with open('vocab.json') as cand_vocab:
-        candidate_vocabulary = json.load(cand_vocab)['1']
 
     if USING_MAML_CONFIGFILE:
-        json_path = os.path.join(args.model_dir, 'meta_params.json')
+        json_path = os.path.join(args.params_dir, 'meta_params.json')
         assert os.path.isfile(json_path), "No json config file gound at {}".format(json_path)
         params = utils.read_json_file(json_path)
         model_params = params['model']
         training_params = params['training']
         dataset_params = params['data']
         meta_training_params = params['meta_training']
-        domains = params['domains']
     else:
         model_params = {
             'embed_dim' : 300,
@@ -204,11 +210,9 @@ if __name__ == '__main__':
             'da_hidden_dim' : 64,
             'da_embed_size' : 50,
             'ff_hidden_dim' : 256,
-            'batch_size' : 2,
+            'batch_size' : 10,
             'num_slots' : 35,
             'ngrams' : '1',
-            'candidate_utterance_vocab_pth' : 'vocab.json',
-            'da_vocab_pth': 'davocab.json'
         }
 
         training_params = {
@@ -221,10 +225,11 @@ if __name__ == '__main__':
             'meta_epochs': 100,
              #Number of domains
             'meta_outer_batch_size': 1,
-            #Number of samples to pull from domain in inner training loop
+            #Number of samples to pull from domain in inner training loop, should be
+            # equal to model_params['batch_size']
             'meta_inner_batch_size': 10,
             'meta_learning_rate': 0.001,
-            'meta_optimizer': 'SGD'
+            'meta_optimizer': 'Adam'
         }
 
         dataset_params = {
@@ -233,15 +238,21 @@ if __name__ == '__main__':
             'num_workers': 1
         }
 
-        domains = ['restaurant']
-
-    utils.set_logger(os.path.join(args.model_dir, 'train.log'))
+    model_params.update(
+                {
+                'candidate_utterance_vocab_pth' : '{}/mst_maml_vocab.json'.format(args.vocab_dir),
+                'da_vocab_pth': '{}/mst_maml_davocab.json'.format(args.vocab_dir),
+                'device': device
+                }
+            )
+    utils.set_logger(os.path.join(args.params_dir, 'train.log'))
     logging.info("Loading the datasets...")
 
     #
-    trainandval_data_files = {d: {
-                'train_file_path': '{}_hyst_train.pkl'.format(d),
-                'val_file_path': '{}_hyst_val.pkl'.format(d),
+    data_files = {d: {
+                'train_file_path': '{}/{}_hyst_train_wslot.pkl'.format(d,d),
+                'val_file_path': '{}/{}_hyst_val_wslot.pkl'.format(d,d),
+                'test_file_path': '{}/{}_hyst_test_wslot.pkl'.format(d,d)
             } for d in domains }
 
 
@@ -263,5 +274,6 @@ if __name__ == '__main__':
     # Train the model
     logging.info("Starting MAML for {} meta epoch(s)".format(meta_training_params['meta_epochs']))
 
-    train_and_eval_maml(model, trainandval_data_files, None, optimizer, meta_optimizer, args.model_dir, args.data_dir,
-            training_params, dataset_params, meta_training_params, model_params, device)
+    train_and_eval_maml(model, data_files, optimizer, meta_optimizer, args.params_dir,
+            args.data_dir, training_params, dataset_params, meta_training_params, model_params,
+            args.output_dir, device)

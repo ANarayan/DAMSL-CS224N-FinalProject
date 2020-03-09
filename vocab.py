@@ -14,7 +14,7 @@ from utils import pad
 #Default dir 'formatted_data' in the parent dir of repo
 DATA_DIR = Path.cwd() / 'formatted_data'
 
-#DOMAINS = ['attraction','hospital', 'hotel', 'police', 'restaurant', 'taxi', 'train'] 
+#DOMAINS = ['attraction','hospital', 'hotel', 'police', 'restaurant', 'taxi', 'train']
 DOMAINS = ['hotel', 'restaurant', 'taxi', 'train']
 #Special vocab tokens
 PAD = '<pad>'
@@ -42,7 +42,7 @@ class Vocab():
         self.word_to_id = word_to_id
         self.fill_special_toks()
         self.ngrams = n_grams
-    
+
     def _input_to_indices(self, toks):
         """
         --toks: (List(str)) or (str) or (List(List(str)))
@@ -62,14 +62,14 @@ class Vocab():
         --device: (torch.device)
         """
         indices = self._input_to_indices(input_to_embed)
-        # Pad 
+        # Pad
         # TODO: check with Josh about the purpose of the if-statement below
         if isDialogueVocab is False:
             indices = pad(indices, self.word_to_id[PAD])
         # print(indices)
         ind_tens = torch.tensor(indices, dtype=torch.int64, device=device)
         return ind_tens
-        
+
     def new_from_domains(self, domains=DOMAINS, data_dir=DATA_DIR):
         """New Vocab from pickled formatted training data"""
         for d in domains:
@@ -85,11 +85,11 @@ class Vocab():
             i += 1
         return i
 
-    
-    def update_from_pkl(self, pth, ftype): 
+
+    def update_from_pkl(self, pth, ftype):
         """
         Reads all dials from pkl file and updates Vocab object
-        
+
         --pth: Path object
         --ftype: one of {'json', 'pkl'}
         --usr: whether to get usr or system transcript
@@ -102,28 +102,26 @@ class Vocab():
             dials = json.load(open(pth, 'r'))
         for dial in dials:
             for turn in dial['dialogue'].keys():
-                toks =  dial['dialogue'][turn]['user_utterance'] 
+                toks =  dial['dialogue'][turn]['user_utterance']
                 candidates = dial['dialogue'][turn]['candidates']
 
                 for t in toks + candidates:
                     i = self.update(t, i)
-        
+
         # len of updated vocab
-        return i  
-    
+        return i
+
     @classmethod
     def load_from_json(cls, pth, ngrams=None):
         """
-            @ param ngrams (List[String]): list of characters which denotes what type of ngrams to include in the vocabulary (i.e ['1', '2'] --> unigram, bigram)
-                                            ngrams set to None if we are loading in from the dialogue acts vocabulary
-
+        Args:
+            ngrams (str): include 1,2,...,ngrams-grams
         """
         vocab_dict = {}
         if ngrams is not None:
-            for ngram in ngrams:
-                new_entries = json.load(open(pth, 'r'))[ngram]
-                vocab_dict.update(new_entries)
-                
+            new_entries = json.load(open(pth, 'r'))[ngrams]
+            vocab_dict.update(new_entries)
+
         else:
             vocab_dict = json.load(open(pth, 'r'))
 
@@ -141,7 +139,7 @@ class Vocab():
         with open(pth, 'w') as f:
             json.dump(existing_vocab, f, indent=2)
         logger.info("Saving {}-gram vocab to {}".format(self.ngrams, pth))
-    
+
     def __len__(self):
         return len(self.word_to_id)
 
