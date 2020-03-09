@@ -90,9 +90,42 @@ class DialoguesDataset(Dataset):
                 yield batch_data, batch_labels
 
 
-#TODO: if time, write a batch loader for tasks/domains, to make maml extensible
-# to many domains by not having to load all their data into memory simultaneously
+class MultiDomainDialoguesDataset(object):
+    def __init__(self, data_files):
+        """
+        data_files (dict) : dict mapping dataset name to dataset path
+        """
+        self.dialogue_dict = {} # mapping from dataset name to DialoguesDataset object
+        self.data_iterator_dict  = {}
+        self.total_dps = 0
 
+        for ds_name, ds_path in data_files.items():
+            new_dialogue_ds = DialoguesDataset(ds_path)
+            self.dialogue_dict[ds_name] = new_dialogue_ds
+            self.total_dps += new_dialogue_ds.__len__()
+    
+    def __len__(self):
+        return self.total_dps
+
+    def data_iterator(self, batch_size, shuffle = True, is_train=False):
+        per_domain_batchsize = int(batch_size/len(self.dialogue_dict))
+        for i in range(self.__len__() // batch_size):
+            all_batch_datapoints = []
+            all_batch_labels = []
+            for _, dialogue_ds in self.dialogue_dict.items():
+                order = list(range(dialogue_ds.__len__()))
+                if shuffle:
+                    random.seed(230)
+                    random.shuffle(order)
+
+                batch_datapoints = [dialogue_ds.__getitem__(idx) for idx in order[i*per_domain_batchsize: (i+1)*per_domain_batchsize]]
+
+                all_batch_datapoints += batch_datapoints
+                all_batch_labels += [torch.Tensor(datapoint['gt_label']) for datapoint in batch_datapoints]
+
+            batch_data, batch_labels = all_batch_datapoints, torch.stack(all_batch_labels)
+            yield batch_data, batch_labels
+        
 
 
 
