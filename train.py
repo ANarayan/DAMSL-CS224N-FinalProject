@@ -52,13 +52,13 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
         try:
             turn_and_cand, cand_label = next(training_generator)
             output = model.forward(turn_and_cand) # Tensor: (batch_size, 1, embed_size)
-            output = output.squeeze(dim=1).cpu()
+            output = output.squeeze(dim=1)
 
             # need to weight loss due to the imbalance in positive to negative examples
             if training_params['pos_weighting'] is not None:
-                pos_weights = torch.tensor(training_params['pos_weighting'])
+                pos_weights = torch.tensor(training_params['pos_weighting'],  device=device)
             else:
-                pos_weights = torch.tensor([1.0] * training_params['num_slots'])
+                pos_weights = torch.tensor([1.0] * training_params['num_slots'], device=device)
 
             loss_func = nn.BCEWithLogitsLoss(pos_weight=pos_weights, reduction='none')
             loss = loss_func(output, cand_label) # Tensor: (batch_size, #_of_slots=35)
