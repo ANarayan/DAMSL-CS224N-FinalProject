@@ -47,7 +47,7 @@ def save_dict_to_pkl(d, path):
     pickle.dump(d, out_file)
 
 def save_checkpoint(state, checkpoint, is_best):
-    filepath = os.path.join(checkpoint, 'last.pth.tar') 
+    filepath = os.path.join(checkpoint, 'last.pth.tar')
     if not os.path.exists(checkpoint):
         print("checkpoint directory doesnt exist. Making directory {}".format(checkpoint))
         os.mkdir(checkpoint)
@@ -61,8 +61,12 @@ def save_checkpoint(state, checkpoint, is_best):
 def load_checkpoint(checkpoint, model, optimizer=None):
     if not os.path.exists(checkpoint):
         raise ("File doesn't exist {}".format(checkpoint))
-    checkpoint = torch.load(checkpoint)
+
+    if not torch.cuda.is_available():
+        checkpoint = torch.load(checkpoint, map_location=torch.device('cpu'))
+    else:
+        checkpoint = torch.load(checkpoint)
     model.load_state_dict(checkpoint['state_dict'])
-    if optimizer: 
+    if optimizer:
         optimizer.load_state_dict(checkpoint['optim_dict'])
     return checkpoint

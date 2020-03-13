@@ -32,6 +32,8 @@ parser.add_argument('--data_dir', default='data/', help='Directory which contain
 parser.add_argument('--model_dir', default='experiments/', help="Directory containing model config file")
 parser.add_argument('--output_model_dir', default='experiments/', help="Directory for saving training logs + model outputs")
 parser.add_argument('--fine_tune_domain', default=None, help='Domain to finetune on')
+parser.add_argument('--train_filename')
+parser.add_argument('--checkpoint_dir', default=False)
 
 def train(model, training_data, optimizer, model_dir, training_params, dataset_params, device):
     """ Trains over the entire training data set """
@@ -96,7 +98,8 @@ def train(model, training_data, optimizer, model_dir, training_params, dataset_p
     return total_loss_train, avg_loss_train
 
 
-def train_and_eval(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params, device):
+def train_and_eval(model, training_data, validation_data, optimizer, model_dir, training_params, dataset_params,
+        output_model_dir, device):
     """ Trains and evaluates the model for the specified number of epochs """
     total_epochs = training_params['num_epochs']
     best_val_acc = 0.0
@@ -181,7 +184,6 @@ def train_and_eval(model, training_data, validation_data, optimizer, model_dir, 
 if __name__ == '__main__':
 
     USING_MODEL_CONFIGFILE = False
-    MODEL_CHECKPOINT = True
 
     TRAIN_FILE_NAME = 'attraction_hyst_train_wslot.pkl'
     #TRAIN_FILE_NAME = 'single_pt_dataset.pkl'
@@ -192,6 +194,7 @@ if __name__ == '__main__':
     # first load parameters from params.json
     args = parser.parse_args()
 
+    MODEL_CHECKPOINT = args.checkpoint_dir
     experiment_name = args.model_dir.split('/')[-1]
     train_writer = SummaryWriter(comment = "_train" + experiment_name )
     eval_writer = SummaryWriter(comment = "_eval" + experiment_name )
@@ -207,6 +210,14 @@ if __name__ == '__main__':
         assert os.path.isfile(weightage_path), "No json config file found at {}".format(weightage_path)
         weights_dict = utils.read_json_file(weightage_path)
         pos_weights = weights_dict[args.fine_tune_domain]
+        TRAIN_FILE_NAME = args.train_filename
+        if args.fine_tune_domain == 'attraction':
+            VAL_FILE_NAME = 'mst_attraction_finetune_val.pkl'
+            TEST_FILE_NAME = 'mst_attraction_finetune_test_v2.pkl'
+        elif args.fine_tune_domain == 'train':
+
+            VAL_FILE_NAME = 'mst_train_finetune_val.pkl'
+            TEST_FILE_NAME = 'mst_train_finetune_test.pkl'
     else:
         pos_weights = None
 
@@ -222,8 +233,8 @@ if __name__ == '__main__':
         'batch_size' : params['batch_size'],
         'num_slots' : 35,
         'ngrams' : ['3'],
-        'candidate_utterance_vocab_pth' : 'mst_attraction_vocab_v2.json',
-        'da_vocab_pth': 'mst_attraction_davocab_v2.json',
+        'candidate_utterance_vocab_pth' :  os.path.join(os.pardir, 'maml_MTL_vocab', 'mst_maml_vocab.json'),
+        'da_vocab_pth': os.path.join(os.pardir, 'maml_MTL_vocab', 'mst_maml_davocab.json'),
         'device' : device
     }
 
@@ -246,7 +257,8 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # Load data
-    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), device=device, training_params['train_set_percentage'])
+    training_data = DialoguesDataset(os.path.join(args.data_dir, TRAIN_FILE_NAME), device=device,
+            dataset_percentage=training_params['train_set_percentage'])
     validation_data = DialoguesDataset(os.path.join(args.data_dir, VAL_FILE_NAME), device=device)
     test_data = DialoguesDataset(os.path.join(args.data_dir, TEST_FILE_NAME), device=device)
 
@@ -259,14 +271,15 @@ if __name__ == '__main__':
         model = DST(**model_params)
 
     if MODEL_CHECKPOINT:
-        utils.load_checkpoint(os.path.join(args.model_dir, 'best.pth.tar'), model)
+        utils.load_checkpoint(os.path.join(args.checkpoint_dir, 'best.pth.tar'), model)
 
     optimizer = optim.Adam(model.parameters(), lr=training_params['learning_rate'])
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(training_params['num_epochs']))
 
-    best_val_loss = train_and_eval(model, training_data, validation_data, optimizer, args.output_model_dir, training_params, dataset_params, device)
+    best_val_loss = train_and_eval(model, training_data, validation_data, optimizer, args.output_model_dir,
+            training_params, dataset_params, args.output_model_dir, device)
 
     """
     # TODO: Need to update which of the current parameter configurations yielded the best results! Read in file, compare best va;
