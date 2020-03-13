@@ -239,7 +239,7 @@ if __name__ == '__main__':
     }
 
     training_params = {
-        'num_epochs' : 20,
+        'num_epochs' : params['num_epochs'],
         'learning_rate' : params['learning_rate'],
         'pos_weighting' : pos_weights,
         'train_set_percentage' : 1, # used for fine-tuning experiments
