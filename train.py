@@ -242,7 +242,7 @@ if __name__ == '__main__':
         'num_epochs' : 20,
         'learning_rate' : params['learning_rate'],
         'pos_weighting' : pos_weights,
-        'train_set_percentage' : .1, # used for fine-tuning experiments
+        'train_set_percentage' : 1, # used for fine-tuning experiments
     }
 
     dataset_params = {
