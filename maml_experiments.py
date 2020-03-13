@@ -12,9 +12,16 @@ def run_train_on_allbutone():
         cmd = ["python", "maml.py", "--config_file", "meta_params.json", "--domains"] + ds
         completed = subprocess.run(cmd, check=True)
 
+def run_train_on_one(d):
+
+    ds = [d_ for d_ in DOMAINS if d_ != d]
+    cmd = ["python", "maml.py", "--config_file", "meta_params.json", "--domains"] + ds
+    completed = subprocess.run(cmd, check=True)
+
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('exp_name', choices=['holdout_train', 'holdout_test'], help="Which experiment")
+    parser.add_argument('--exp_name', choices=['holdout_train', 'holdout_test'], help="Which experiment")
+    parser.add_argument('--domain', help="Single training run, leaving out single domain")
     parser.add_argument('--k_shot', default = DEFAULT_K_SHOT_VALUES, help="How many examples to\
         train on on held out dialogue set")
 
@@ -22,3 +29,5 @@ if __name__ == '__main__':
 
     if args.exp_name == 'holdout_train':
         run_train_on_allbutone()
+    elif args.domain:
+        run_train_on_one(args.domain)

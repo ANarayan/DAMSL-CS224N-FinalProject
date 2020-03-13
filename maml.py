@@ -164,7 +164,7 @@ def train_and_eval_maml(model, trainandval_data_files, optimizer, meta_optimizer
                                'avg. goal accuracy' : eval_avg_goal_acc,
                                'avg. slot precision' : avg_slot_precision
                                },
-                                checkpoint=output_dir,
+                                checkpoint="{}/{}".format(output_dir, model_name),
                                 is_best=is_best_loss)
 
         # If best_eval, best_save_path
