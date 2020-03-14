@@ -46,6 +46,9 @@ def save_dict_to_pkl(d, path):
     out_file = open(path, 'wb')
     pickle.dump(d, out_file)
 
+def load_dict_from_pkl(path):
+    return pickle.load(open(path, 'rb'))
+
 def save_checkpoint(state, checkpoint, is_best):
     filepath = os.path.join(checkpoint, 'last.pth.tar')
     if not os.path.exists(checkpoint):

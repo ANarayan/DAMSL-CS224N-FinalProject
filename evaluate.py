@@ -149,8 +149,16 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             predicted_slot_dict = get_filled_slot_dict(candidates, slot_predictions)
             slot_accuracy, joint_goal_acc, slot_precision, slot_recall, slot_f1 = calc_slot_accuracy(predicted_slot_dict, gt_slot_values_dict, num_of_slots)
 
-            pred_outputs = {'gt': gt_slot_values_dict, 'pred': predicted_slot_dict}
-            utils.save_dict_to_pkl(pred_outputs, os.path.join(model_dir, 'pred_outputs.pkl'))
+            pred_outputs_pth =  os.path.join(model_dir, 'pred_outputs.pkl')
+            if os.path.exists(pred_outputs_path):
+                pred_outputs = utils.load_dict_from_pkl(pred_outputs_pth)
+                pred_outputs['gt'] += [gt_slot_values_dict]
+                pred_outputs['pred'] += [predicted_slot_dict]
+            else:
+                pred_outputs = {'gt':[gt_slot_values_dict], 'pred':[predicted_slot_dict]}
+
+            utils.save_dict_to_pkl(pred_outputs, pred_outputs_pth)
+
             joint_goal_acc_sum += joint_goal_acc
             avg_goal_acc_sum += slot_accuracy
             slot_precision_sum += slot_precision
