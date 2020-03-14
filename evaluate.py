@@ -150,7 +150,7 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
             slot_accuracy, joint_goal_acc, slot_precision, slot_recall, slot_f1 = calc_slot_accuracy(predicted_slot_dict, gt_slot_values_dict, num_of_slots)
 
             pred_outputs_pth =  os.path.join(model_dir, 'pred_outputs.pkl')
-            if os.path.exists(pred_outputs_path):
+            if os.path.exists(pred_outputs_pth):
                 pred_outputs = utils.load_dict_from_pkl(pred_outputs_pth)
                 pred_outputs['gt'] += [gt_slot_values_dict]
                 pred_outputs['pred'] += [predicted_slot_dict]
