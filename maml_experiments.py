@@ -107,4 +107,4 @@ if __name__ == '__main__':
     elif args.exp_name == 'holdout_zeroshot':
         test_domain_zeroshot(args.test_domain)
     elif args.exp_name == 'holdout_single_k':
-        test_domain_single_k(args.k)
+        test_domain_single_k(args.test_domain, args.k)
