@@ -156,7 +156,7 @@ def evaluate(model, evaluation_data, model_dir, dataset_params, device):
                 pred_outputs['gt'] += [(i, gt_slot_values_dict)]
                 pred_outputs['pred'] += [(i, predicted_slot_dict)]
             else:
-                pred_outputs = {'gt':[(0, gt_slot_values_dict)], 'pred':[(0,predicted_slot_dict])}
+                pred_outputs = {'gt':[(0, gt_slot_values_dict)], 'pred':[(0,predicted_slot_dict)]}
 
             utils.save_dict_to_pkl(pred_outputs, pred_outputs_pth)
 
